@@ -1,13 +1,13 @@
-from random import random
+import random
 from logger import *
 import copy
 
 class Checkers:
     def __init__(self, players):
         self.players = players
-        self.set_player_numbers()
         self.logs = Logger('/workspace/games/checkers/logs.txt')
         self.logs.clear_log()
+        self.set_player_numbers()
         self.board = [[(i + j) % 2 * ((3 - ((j < 3) - (j > 4))) % 3) for i in range(8)] for j in range(8)]
         self.round =  1
         self.winner = None
@@ -21,7 +21,7 @@ class Checkers:
         if self.board[coord[0]][coord[1]] == 1:
             return [(-1, 1), (-1, -1)]
 
-        if self.board[coord[0]][coord[1]] == -1 or board[coord[0]][coord[1]] == -2:
+        if self.board[coord[0]][coord[1]] == -1 or self.board[coord[0]][coord[1]] == -2:
             return [(-1, 1), (-1, -1), (1, 1), (1, -1)]
 
         if self.board[coord[0]][coord[1]] == 2:
@@ -44,15 +44,18 @@ class Checkers:
 
         for translation in valid_regular_translations:
             new_x = coord[0] + translation[0]
-            new_y = coord[1] + translations[1]
+            new_y = coord[1] + translation[1]
             new_kill_x = coord[0] + translation[0] * 2
-            new_kill_y = coord[1] + translations[1] * 2
+            new_kill_y = coord[1] + translation[1] * 2
 
-            if self.board[new_x][new_y] == 0:
-                possible_translations.append(translation)
+            if new_x in [n for n in range(8)] and new_y in [n for n in range(8)]:
+                if self.board[new_x][new_y] == 0:
+                    possible_regular_translations.append(translation)
 
-            if self.board[new_x][new_y] == 3 - abs(self.board[coord[0]][coord[1]]) and self.board[new_kill_x][new_kill_y]:
-                possible_kill_translations.append((new_kill_x, new_kill_y))
+                if new_kill_x in [n for n in range(8)] and new_kill_y in [n for n in range(8)]:
+                    if self.board[new_x][new_y] == 3 - abs(self.board[coord[0]][coord[1]]) and self.board[new_kill_x][new_kill_y]:
+                        possible_kill_translations.append((translation[0] * 2, translation[1] * 2))
+
 
         if len(possible_kill_translations) > 0:
             return possible_kill_translations
@@ -60,6 +63,18 @@ class Checkers:
         else:
             return possible_regular_translations
 
+    def get_possible_moves(self, player):
+        possible_moves = []
+
+        for i in range(len(self.board)):
+            for j in range(len(self.board[i])):
+                if self.board[i][j] == player.player_num:
+                    possible_translations = self.get_possible_translations((i, j))
+
+                    for translation in possible_translations:
+                        possible_moves.append(((i, j), translation))
+
+        return possible_moves
 
     def get_possible_pieces(self, player):
         movable_pieces = []
@@ -76,40 +91,61 @@ class Checkers:
         
         return movable_pieces
 
-    def get_possible_moves(self):
-        #stuff
-        return choices
+    def translate(self, chosen_move, possible_moves):
+        x, y = chosen_move[0]
+        new_x = x + chosen_move[1][0]
+        new_y = y + chosen_move[1][1]
 
-    def translate(self, piece_coords, translation):
-        x, y = piece_coords
-        new_x = x + piece_coords[0]
-        new_y = y + piece_coords[1]
+        while new_x not in [0, 1, 2, 3, 4, 5, 6, 7] or new_y not in [0, 1, 2, 3, 4, 5, 6, 7]:
+            chosen_move = random.choice(possible_moves)
+            new_x = x + chosen_move[1][0]
+            new_y = y + chosen_move[1][1]
+
         piece = self.board[x][y]
         self.board[x][y] = 0
 
         if new_x == 0 and piece == 1:
             self.board[new_x][new_y] = -1
 
-        if new_X == 6 and piece == 2:
+        if new_x == 7 and piece == 2:
             self.board[new_x][new_y] = -2
+
+        else:
+            self.board[new_x][new_y] = piece
+
+        return (new_x, new_y)
+
+    def move_again(self, possible_translations):
+        if (-2, 2) not in possible_translations and (-2, -2) not in possible_translations and (2, 2) not in possible_translations and (2, -2) not in possible_translations:
+            return False
+
+        return True
 
     def complete_round(self):
         for player in self.players:
-            movable_pieces = self.get_possible_pieces(player)
+            possible_moves = self.get_possible_moves(player)
 
-            if len(movable_pieces) == 0:
+            if len(possible_moves) == 0:
                 self.winner = 3 - player.player_num
                 break
 
-            possible_translations = self.get_possible_translations(chosen_piece)
-            chosen_translation = player.choose_translation(copy.deepcopy(self.board), possible_translations, chosen_piece)
-            self.translate(chosen_piece, translation)
+            chosen_move = player.choose_move(copy.deepcopy(self.board), possible_moves)
 
-            if translation in [(-2, 2), (2, 2), (2, -2), (-2, -2)]:
-                possible_translations = self.get_possible_translations(chosen_piece)
-                chosen_translation = player.choose_translation(copy.deepcopy(self.board), possible_translations, chosen_piece)
-                self.translate(chosen_piece, translation)
+            if chosen_move not in possible_moves:
+                chosen_move = random.choice(possible_moves)
 
+            new_coords = self.translate(chosen_move, possible_moves)
+
+            while chosen_move in [(-2, -2), (-2, 2), (2, -2), (2, 2)]:
+                possible_translations = self.get_possible_translations(new_coords)
+                possible_moves = [[new_coords, translation] for translation in possible_translations]
+
+                if self.move_again(possible_translations) == True:
+                    chosen_move = player.choose_move(copy.deepcopy(self.board), possible_moves)
+                    self.translate(chosen_move, possible_moves)
+
+                else:
+                    self.translate([new_coords, (0, 0)], possible_moves)
 
         self.round += 1
         self.log_board()
