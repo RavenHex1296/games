@@ -21,7 +21,7 @@ class Checkers:
         if self.board[coord[0]][coord[1]] == 1:
             return [(-1, 1), (-1, -1)]
 
-        if self.board[coord[0]][coord[1]] == -1 or self.board[coord[0]][coord[1]] == -2:
+        if self.board[coord[0]][coord[1]] < 0:
             return [(-1, 1), (-1, -1), (1, 1), (1, -1)]
 
         if self.board[coord[0]][coord[1]] == 2:
@@ -39,6 +39,7 @@ class Checkers:
 
     def get_possible_translations(self, coord):
         valid_regular_translations = self.get_valid_translations(coord)
+
         possible_regular_translations = []
         possible_kill_translations = []
 
@@ -53,7 +54,8 @@ class Checkers:
                     possible_regular_translations.append(translation)
 
                 if new_kill_x in [n for n in range(8)] and new_kill_y in [n for n in range(8)]:
-                    if self.board[new_x][new_y] == 3 - abs(self.board[coord[0]][coord[1]]) and self.board[new_kill_x][new_kill_y]:
+                    if self.board[new_kill_x][new_y] == 3 - abs(self.board[coord[0]][coord[1]]) and self.board[new_kill_x][new_kill_y] == 0:
+                        print(f"kill on {self.round}")
                         possible_kill_translations.append((translation[0] * 2, translation[1] * 2))
 
 
@@ -107,7 +109,7 @@ class Checkers:
         if new_x == 0 and piece == 1:
             self.board[new_x][new_y] = -1
 
-        if new_x == 7 and piece == 2:
+        elif new_x == 7 and piece == 2:
             self.board[new_x][new_y] = -2
 
         else:
@@ -136,16 +138,17 @@ class Checkers:
 
             new_coords = self.translate(chosen_move, possible_moves)
 
-            while chosen_move in [(-2, -2), (-2, 2), (2, -2), (2, 2)]:
+            while chosen_move[1] in [(-2, -2), (-2, 2), (2, -2), (2, 2)]:
                 possible_translations = self.get_possible_translations(new_coords)
                 possible_moves = [[new_coords, translation] for translation in possible_translations]
 
                 if self.move_again(possible_translations) == True:
                     chosen_move = player.choose_move(copy.deepcopy(self.board), possible_moves)
-                    self.translate(chosen_move, possible_moves)
+                    new_coords = self.translate(chosen_move, possible_moves)
 
                 else:
-                    self.translate([new_coords, (0, 0)], possible_moves)
+                    chosen_move = [new_coords, (0, 0)]
+                    new_coords = self.translate(chosen_move, possible_moves)
 
         self.round += 1
         self.log_board()
@@ -213,7 +216,11 @@ class Checkers:
                     row_string += ' '
 
                 else:
-                    row_string += str(space) + ' '
+                    if space >= 0:
+                        row_string += "+" + str(space) + ' '
+
+                    else:
+                        row_string += str(space) + ' '
 
             self.logs.write(row_string[:-1] + "\n")
 
