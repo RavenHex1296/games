@@ -54,8 +54,7 @@ class Checkers:
                     possible_regular_translations.append(translation)
 
                 if new_kill_x in [n for n in range(8)] and new_kill_y in [n for n in range(8)]:
-                    if self.board[new_kill_x][new_y] == 3 - abs(self.board[coord[0]][coord[1]]) and self.board[new_kill_x][new_kill_y] == 0:
-                        print(f"kill on {self.round}")
+                    if self.board[new_x][new_y] == (3 - abs(self.board[coord[0]][coord[1]])) and self.board[new_kill_x][new_kill_y] == 0:
                         possible_kill_translations.append((translation[0] * 2, translation[1] * 2))
 
 
@@ -147,8 +146,7 @@ class Checkers:
                     new_coords = self.translate(chosen_move, possible_moves)
 
                 else:
-                    chosen_move = [new_coords, (0, 0)]
-                    new_coords = self.translate(chosen_move, possible_moves)
+                    break
 
         self.round += 1
         self.log_board()
