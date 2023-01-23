@@ -18,10 +18,14 @@ class Checkers:
         self.players[1].set_player_number(2)
 
     def get_valid_translations(self, coord):
+        #print(self.board)
+        #print(coord)
+        #print(self.board[coord[0]][coord[1]], "\n")
+
         if self.board[coord[0]][coord[1]] == 1:
             return [(-1, 1), (-1, -1)]
 
-        if self.board[coord[0]][coord[1]] < 0:
+        if self.board[coord[0]][coord[1]] == -1 or self.board[coord[0]][coord[1]] == -2:
             return [(-1, 1), (-1, -1), (1, 1), (1, -1)]
 
         if self.board[coord[0]][coord[1]] == 2:
@@ -66,15 +70,20 @@ class Checkers:
 
     def get_possible_moves(self, player):
         possible_moves = []
+        #print(self.board)
+
+        board_elements = []
 
         for i in range(len(self.board)):
             for j in range(len(self.board[i])):
-                if self.board[i][j] == player.player_num:
+                if abs(self.board[i][j]) == player.player_num:
                     possible_translations = self.get_possible_translations((i, j))
+                    board_elements.append(self.board[i][j])
 
                     for translation in possible_translations:
                         possible_moves.append(((i, j), translation))
-
+        
+        #print(board_elements, "\n")
         return possible_moves
 
     def get_possible_pieces(self, player):
@@ -104,6 +113,10 @@ class Checkers:
 
         piece = self.board[x][y]
         self.board[x][y] = 0
+
+        if chosen_move[1] in [(2, 2), (2, -2), (-2, 2), (-2, -2)]:
+            x_change, y_change = chosen_move[1][0] / 2, chosen_move[1][1] / 2
+            self.board[int(x + x_change)][int(y + y_change)] = 0
 
         if new_x == 0 and piece == 1:
             self.board[new_x][new_y] = -1
@@ -140,6 +153,7 @@ class Checkers:
             while chosen_move[1] in [(-2, -2), (-2, 2), (2, -2), (2, 2)]:
                 possible_translations = self.get_possible_translations(new_coords)
                 possible_moves = [[new_coords, translation] for translation in possible_translations]
+                
 
                 if self.move_again(possible_translations) == True:
                     chosen_move = player.choose_move(copy.deepcopy(self.board), possible_moves)
@@ -148,8 +162,9 @@ class Checkers:
                 else:
                     break
 
+            self.log_board()
+
         self.round += 1
-        self.log_board()
 
     def run_to_completion(self):
         while self.winner == None:
@@ -202,7 +217,6 @@ class Checkers:
 
         if remainding_player_instances[1] == 1 and remainding_player_instances[2] == 1:
             return "Tie"
-
 
     def log_board(self):
         for i in range(len(self.board)):
