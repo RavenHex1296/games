@@ -61,16 +61,15 @@ class Checkers:
                     if self.board[new_x][new_y] == (3 - abs(self.board[coord[0]][coord[1]])) and self.board[new_kill_x][new_kill_y] == 0:
                         possible_kill_translations.append((translation[0] * 2, translation[1] * 2))
 
+        return possible_kill_translations + possible_regular_translations
+        #if len(possible_kill_translations) > 0:
+        #    return possible_kill_translations
 
-        if len(possible_kill_translations) > 0:
-            return possible_kill_translations
-
-        else:
-            return possible_regular_translations
+        #else:
+        #    return possible_regular_translations
 
     def get_possible_moves(self, player):
         possible_moves = []
-        #print(self.board)
 
         board_elements = []
 
@@ -83,7 +82,6 @@ class Checkers:
                     for translation in possible_translations:
                         possible_moves.append(((i, j), translation))
         
-        #print(board_elements, "\n")
         return possible_moves
 
     def get_possible_pieces(self, player):
@@ -155,9 +153,9 @@ class Checkers:
             self.logs.write(f"\tPlayer {player.player_num} moved from {chosen_move[0]} to {new_coords} \n")
 
             while chosen_move[1] in [(-2, -2), (-2, 2), (2, -2), (2, 2)]:
-                possible_translations = self.get_possible_translations(new_coords)
-                possible_moves = [[new_coords, translation] for translation in possible_translations]
-                
+                invalid_translations = [(1, 1), (1, -1), (-1, -1), (-1, 1)]
+                possible_translations = [translation for translation in self.get_possible_translations(new_coords) if translation not in invalid_translations]
+                possible_moves = [[new_coords, translation] for translation in possible_translations] + [(0, 0)]
 
                 if self.move_again(possible_translations) == True:
                     chosen_move = player.choose_move(copy.deepcopy(self.board), possible_moves)
@@ -226,9 +224,11 @@ class Checkers:
             return "Tie"
 
     def log_board(self):
+        self.logs.write("-" * 25 + "\n")
+
         for i in range(len(self.board)):
             row = self.board[i]
-            row_string = ''
+            row_string = '|'
 
             for space in row:
                 if space == "":
@@ -236,14 +236,14 @@ class Checkers:
 
                 else:
                     if space > 0:
-                        row_string += "R" + str(space) + ' '
+                        row_string += "R" + str(space) + '|'
 
                     elif space == 0:
-                        row_string += "__ "
+                        row_string += "__|"
 
                     else:
-                        row_string += "C" + str(abs(space)) + ' '
+                        row_string += "C" + str(abs(space)) + '|'
 
-            self.logs.write(row_string[:-1] + "\n")
+            self.logs.write(row_string[:-1] + "|\n" + "-" * 25 + "\n")
 
         self.logs.write('\n')
