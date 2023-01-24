@@ -136,6 +136,8 @@ class Checkers:
         return True
 
     def complete_round(self):
+        self.logs.write(f"Beginning round {self.round} \n")
+
         for player in self.players:
             possible_moves = self.get_possible_moves(player)
 
@@ -150,6 +152,8 @@ class Checkers:
 
             new_coords = self.translate(chosen_move, possible_moves)
 
+            self.logs.write(f"\tPlayer {player.player_num} moved from {chosen_move[0]} to {new_coords} \n")
+
             while chosen_move[1] in [(-2, -2), (-2, 2), (2, -2), (2, 2)]:
                 possible_translations = self.get_possible_translations(new_coords)
                 possible_moves = [[new_coords, translation] for translation in possible_translations]
@@ -158,12 +162,15 @@ class Checkers:
                 if self.move_again(possible_translations) == True:
                     chosen_move = player.choose_move(copy.deepcopy(self.board), possible_moves)
                     new_coords = self.translate(chosen_move, possible_moves)
+                    self.logs.write(f"\tPlayer {player.player_num} moved from {chosen_move[0]} to {new_coords} \n")
 
                 else:
+                    self.logs.write(f"\tPlayer {player.player_num} didn't move again \n")
                     break
 
             self.log_board()
 
+        self.logs.write(f"Ending round {self.round} \n\n")
         self.round += 1
 
     def run_to_completion(self):
@@ -228,11 +235,14 @@ class Checkers:
                     row_string += ' '
 
                 else:
-                    if space >= 0:
-                        row_string += "+" + str(space) + ' '
+                    if space > 0:
+                        row_string += "R" + str(space) + ' '
+
+                    elif space == 0:
+                        row_string += "__ "
 
                     else:
-                        row_string += str(space) + ' '
+                        row_string += "C" + str(abs(space)) + ' '
 
             self.logs.write(row_string[:-1] + "\n")
 

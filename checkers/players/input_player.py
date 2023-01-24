@@ -13,5 +13,6 @@ class InputPlayer:
         self.player_num = n
 
     def choose_move(self, board, choices):
-        chosen_choice = input("Choose index of choice ")
-        return random.choice(choices)
+        print(choices)
+        chosen_choice = input("Type index of choice \n")
+        return choices[int(chosen_choice)]
