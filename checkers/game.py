@@ -197,7 +197,7 @@ class Checkers:
 
         for entry in flattened_board:
             if entry != 0:
-                remainding_players.append(entry)
+                remainding_players.append(abs(entry))
                 remainding_player_instances[entry] += 1
 
         if len(remainding_players) == 1:

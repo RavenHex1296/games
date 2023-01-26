@@ -47,7 +47,7 @@ class Node():
 
         for entry in flattened_board:
             if entry != 0:
-                remainding_players.append(entry)
+                remainding_players.append(abs(entry))
                 remainding_player_instances[entry] += 1
 
         if len(remainding_players) == 1:
@@ -65,10 +65,29 @@ class Node():
 
         return [child.value for child in self.children]
 
-    def heuristic_evaluation(self, neural_net):
-        neural_net.build_neural_net(self.flatten(copy.deepcopy(self.state)))
-        return neural_net.get_node(86).node_output
+    def convert_board(self, neural_net):
+        converted_board = copy.deepcopy(self.state)
 
+        for row in converted_board:
+            for column in row:
+                if column == self.player_num:
+                    column = 1
+
+                if column == 3 - self.player_num:
+                    column = -1
+
+                if column == -self.player_num:
+                    column = neural_net.k_value
+
+                if column == - (3 - self.player_num):
+                    column = -neural_net.k_value
+
+        return converted_board
+
+    def heuristic_evaluation(self, neural_net):
+        converted_board = self.convert_board(neural_net)
+        neural_net.build_neural_net(self.flatten(converted_board))
+        return neural_net.get_node(86).node_output
 
     def set_node_value(self, neural_net):
         if self.children == None or len(self.children) == 0 or self.check_for_winner() not in [1, -1]:

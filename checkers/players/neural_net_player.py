@@ -16,34 +16,14 @@ class NNPlayer:
         root_state = [[None, None, None], [None, None, None], [None, None, None]]
         self.game_tree = ReducedSearchGameTree(root_state, self.player_num, self.ply, self.neural_net)
 
-    def convert_board(self, board):
-        converted_board = copy.deepcopy(board)
-
-        for row in converted_board:
-            for column in row:
-                if column == self.player_num:
-                    column = 1
-
-                if column == 3 - self.player_num:
-                    column = -1
-
-                if column == -self.player_num:
-                    column = self.neural_net.k_value
-
-                if column == - (3 - self.player_num):
-                    column = -self.neural_net.k_value
-
-        return converted_board
-
     def choose_move(self, board, choices):
         self.game_tree.reset_node_values()
 
-        converted_board = self.convert_board(board)
 
-        if converted_board not in list(self.game_tree.nodes_dict.keys()):
-            self.game_tree.nodes_dict[str(converted_board)] = Node(converted_board, self.player_num, self.player_num)
+        if board not in list(self.game_tree.nodes_dict.keys()):
+            self.game_tree.nodes_dict[str(board)] = Node(board, self.player_num, self.player_num)
 
-        current_node = self.game_tree.nodes_dict[str(converted_board)]
+        current_node = self.game_tree.nodes_dict[str(board)]
 
         self.game_tree.build_tree([current_node])
         children = self.game_tree.build_tree([current_node])
