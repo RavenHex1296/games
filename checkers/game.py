@@ -181,31 +181,14 @@ class Checkers:
         else:
             self.logs.write('Tie')
 
-    def get_diagonals(self):
-        fdiag = [[] for _ in range(len(self.board) + len(self.board[0]) - 1)]
-        bdiag = [[] for _ in range(len(fdiag))]
-
-        for x in range(len(self.board[0])):
-            for y in range(len(self.board)):
-                fdiag[x + y].append(self.board[y][x])
-                bdiag[x - y - (1 - len(self.board))].append(self.board[y][x])
-
-        return fdiag + bdiag
-
-    def get_columns(self):
-        columns = []
-
-        for column_index in range(len(self.board[0])):
-            columns.append([row[column_index] for row in self.board])
-
-        return columns
 
     def flatten(self, board):
         flattened_board = []
         
         for row in board:
-            for column in board[row]:
-                flattened_board.append(board[row][column])
+            flattened_board += row
+
+        return flattened_board
 
     def check_for_winner(self):
         flattened_board = self.flatten(copy.deepcopy(self.board))
@@ -221,6 +204,9 @@ class Checkers:
             return remainding_players[0]
 
         if remainding_player_instances[1] == 1 and remainding_player_instances[2] == 1:
+            return "Tie"
+
+        if self.round > 100:
             return "Tie"
 
     def log_board(self):
