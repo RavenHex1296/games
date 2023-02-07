@@ -17,6 +17,12 @@ from input_player import *
 logs = Logger('/workspace/games/fogel.txt')
 
 def activation_function(x):
+    if x > 100:
+        return 1
+
+    if x < -100:
+        return 0
+
     return 1 / (1 + math.exp(-x))
 
 
@@ -53,19 +59,20 @@ class EvolvedNeuralNet:
                 next_node.parents.append(current_node)
 
     def build_neural_net(self, input_array):
-        for n in range(0, len(self.nodes[1])):
-            node = self.nodes[n]
+        for n in range(0, len(input_array)):
+            node = self.nodes[1][n]
 
             if node.node_num == self.piece_difference_node_num:
                 continue
 
-            node.node_input = input_array[n]
-            node.node_output = input_array[n]
+            else:
+                node.node_input = input_array[n]
+                node.node_output = input_array[n]
 
         piece_difference_node = self.get_node(self.piece_difference_node_num)
-        piece_difference_node.node_output = sum([node.output for node in self.nodes[1]])
+        piece_difference_node.node_output = sum([node.node_output for node in self.nodes[1] if node.node_num != piece_difference_node])
 
-        for node in self.nodes[2] + self.nodes[3]:
+        for node in self.nodes[2] + self.nodes[3] + self.nodes[4]:
             total_input = 0
 
             for input_node in node.parents:
@@ -75,7 +82,7 @@ class EvolvedNeuralNet:
 
             node.node_output = activation_function(total_input)
 
-        return [node.node_output for node in self.nodes[3]]
+        return self.nodes[4][0].node_output
 
     def get_node(self, node_num):
         for node in flatten(self.nodes):
@@ -304,7 +311,12 @@ num_trials = 1
 for n in range(0, num_generations):
     total_values[n] = 0
 
-run(first_gen_size, num_generations)
+#run(first_gen_size, num_generations)
+first_gen = make_first_gen(2)
+start_time = time.time()
+game = Checkers([RandomPlayer(), NNPlayer(3, first_gen[0])])
+game.run_to_completion()
+print(game.winner, time.time() - start_time)
 
 '''
 for n in range(0, num_trials):

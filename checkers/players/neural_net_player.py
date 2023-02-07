@@ -13,7 +13,7 @@ class NNPlayer:
   
     def set_player_number(self, n):
         self.player_num = n
-        root_state = [[None, None, None], [None, None, None], [None, None, None]]
+        root_state = [[(i + j) % 2 * ((3 - ((j < 3) - (j > 4))) % 3) for i in range(8)] for j in range(8)]
         self.game_tree = ReducedSearchGameTree(root_state, self.player_num, self.ply, self.neural_net)
 
     def translate(self, chosen_move, possible_moves, board):
@@ -42,7 +42,7 @@ class NNPlayer:
         else:
             board[new_x][new_y] = piece
 
-        return (new_x, new_y)
+        return board
 
     def choose_move(self, board, choices):
         self.game_tree.reset_node_values()
@@ -60,19 +60,20 @@ class NNPlayer:
             children = self.game_tree.build_tree(children)
 
         self.game_tree.set_node_values(current_node)
-        max_value_node = current_node.children[0]
+        max_value = current_node.children[0].value
 
         for child in current_node.children:
-            if child.value > max_value_node.value:
-                max_value_node = child
+            if child.value > max_value:
+                max_value = child.value
 
         optimal_choices = []
 
         for choice in choices:
-            new_board = copy.deepcopy(game_board)
-            self.translate(choice, choices, new_board)
+            new_board = self.translate(choice, choices, copy.deepcopy(board))
 
-            if new_board == max_value_node.state:
+            board_value = self.game_tree.nodes_dict[str(new_board)].value
+
+            if board_value == max_value:
                 optimal_choices.append(choice)
 
         choice = random.choice(optimal_choices)

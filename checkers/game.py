@@ -155,7 +155,7 @@ class Checkers:
             while chosen_move[1] in [(-2, -2), (-2, 2), (2, -2), (2, 2)]:
                 invalid_translations = [(1, 1), (1, -1), (-1, -1), (-1, 1)]
                 possible_translations = [translation for translation in self.get_possible_translations(new_coords) if translation not in invalid_translations]
-                possible_moves = [[new_coords, translation] for translation in possible_translations] + [(0, 0)]
+                possible_moves = [(new_coords, translation) for translation in possible_translations] + [(new_coords, (0, 0))]
 
                 if self.move_again(possible_translations) == True:
                     chosen_move = player.choose_move(copy.deepcopy(self.board), possible_moves)
@@ -196,9 +196,9 @@ class Checkers:
         remainding_player_instances = {1: 0, 2: 0}
 
         for entry in flattened_board:
-            if entry != 0:
+            if entry != 0 and abs(entry) not in remainding_player_instances:
                 remainding_players.append(abs(entry))
-                remainding_player_instances[entry] += 1
+                remainding_player_instances[abs(entry)] += 1
 
         if len(remainding_players) == 1:
             return remainding_players[0]
@@ -206,7 +206,7 @@ class Checkers:
         if remainding_player_instances[1] == 1 and remainding_player_instances[2] == 1:
             return "Tie"
 
-        if self.round > 100:
+        if self.round > 100 and self.winner == None:
             return "Tie"
 
     def log_board(self):

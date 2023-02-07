@@ -47,8 +47,10 @@ class Node():
 
         for entry in flattened_board:
             if entry != 0:
-                remainding_players.append(abs(entry))
-                remainding_player_instances[entry] += 1
+                if abs(entry) not in remainding_players:
+                    remainding_players.append(abs(entry))
+            
+                remainding_player_instances[abs(entry)] += 1
 
         if len(remainding_players) == 1:
             return remainding_players[0]
@@ -56,12 +58,12 @@ class Node():
         if remainding_player_instances[1] == 1 and remainding_player_instances[2] == 1:
             return "Tie"
 
-    def children_to_value(self):
+    def children_to_value(self, neural_net):
         if self.children == None or len(self.children) == 0:
             return None
 
         for child in self.children:
-            child.set_node_value()
+            child.set_node_value(neural_net)
 
         return [child.value for child in self.children]
 
@@ -84,22 +86,45 @@ class Node():
 
         return converted_board
 
+    def reduce_board(self, board):
+        reduced_board = []
+
+        for i in range(0, len(board)):
+            for j in range(0, len(board[i])):
+                if i % 2 == 0:
+                    if j % 2 == 1:
+                        reduced_board.append(board[i][j])
+
+                if i % 2 == 1:
+                    if j % 2 == 0:
+                        reduced_board.append(board[i][j])
+
+        return reduced_board
+
     def heuristic_evaluation(self, neural_net):
-        converted_board = self.convert_board(neural_net)
-        neural_net.build_neural_net(self.flatten(converted_board))
-        return neural_net.get_node(86).node_output
+        if self.check_for_winner() not in ["Tie", None]:
+            if self.check_for_winner() == self.player_num:
+                return 1
+
+            if self.check_for_winner() == 3 - self.player_num:
+                return -1
+
+        else:
+            converted_board = self.convert_board(neural_net)
+            reduced_board = self.reduce_board(converted_board)
+            neural_net.build_neural_net(reduced_board)
+            return neural_net.get_node(86).node_output
 
     def set_node_value(self, neural_net):
-        if self.children == None or len(self.children) == 0 or self.check_for_winner() not in [1, -1]:
-            self.value = self.heuristic_evaluation()
+        if self.children == None or len(self.children) == 0:
+            self.value = self.heuristic_evaluation(neural_net)
             return 
 
-        if self.check_for_winner() in [1, -1]:
-            if self.check_for_winner() == 1:
-                self.value = 1
+        if self.turn == self.player_num:
+            self.value = max(self.children_to_value(neural_net))
 
-            if self.check_for_winner() == -1:
-                self.value = -1
+        elif self.turn == 3 - self.player_num:
+            self.value = min(self.children_to_value(neural_net))
 
 class ReducedSearchGameTree():
     def __init__(self, root_state, player_num, ply, neural_net):
@@ -111,15 +136,19 @@ class ReducedSearchGameTree():
         self.ply = ply
         self.neural_net = neural_net
 
-    def get_valid_kill_translations(self, coord, board):
-        if self.board[coord[0]][coord[1]] == 1:
-            return [(-2, 2), (-2, -2)]
+    def get_valid_translations(self, coord, board):
+        #print(self.board)
+        #print(coord)
+        #print(self.board[coord[0]][coord[1]], "\n")
 
-        if self.board[coord[0]][coord[1]] == 2:
-            return [(2, -2), (2, 2)]
+        if board[coord[0]][coord[1]] == 1:
+            return [(-1, 1), (-1, -1)]
 
-        else:
-            return [(-2, 2), (-2, -2), (2, -2), (2, 2)]
+        if board[coord[0]][coord[1]] == -1 or board[coord[0]][coord[1]] == -2:
+            return [(-1, 1), (-1, -1), (1, 1), (1, -1)]
+
+        if board[coord[0]][coord[1]] == 2:
+            return [(1, -1), (1, 1)]
 
     def get_possible_translations(self, coord, board):
         valid_regular_translations = self.get_valid_translations(coord, board)
@@ -151,7 +180,7 @@ class ReducedSearchGameTree():
         for i in range(len(board)):
             for j in range(len(board[i])):
                 if abs(board[i][j]) == player_turn:
-                    possible_translations = get_possible_translations((i, j))
+                    possible_translations = self.get_possible_translations((i, j), board)
                     board_elements.append(board[i][j])
 
                     for translation in possible_translations:
@@ -224,7 +253,7 @@ class ReducedSearchGameTree():
         for node in current_nodes:
             self.create_children(node)
 
-            if len(node.children) != 0:
+            if len(node.children) != 0 or node.children != None:
                 children += node.children
 
             else:
