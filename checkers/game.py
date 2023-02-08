@@ -173,7 +173,11 @@ class Checkers:
 
     def run_to_completion(self):
         while self.winner == None:
-            self.complete_round()
+            if self.round <= 100:
+                self.complete_round()
+
+            if self.round > 100:
+                self.winner = "Tie"
 
         if self.winner != 'Tie':
             self.logs.write(f'Player {self.winner} won')

@@ -314,9 +314,9 @@ for n in range(0, num_generations):
 #run(first_gen_size, num_generations)
 first_gen = make_first_gen(2)
 start_time = time.time()
-game = Checkers([RandomPlayer(), NNPlayer(3, first_gen[0])])
+game = Checkers([NNPlayer(3, first_gen[0]), NNPlayer(3, first_gen[0])])
 game.run_to_completion()
-print(game.winner, time.time() - start_time)
+print(f"{game.winner} won in {time.time() - start_time} seconds with 3 ply")
 
 '''
 for n in range(0, num_trials):

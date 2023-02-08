@@ -51,15 +51,17 @@ class NNPlayer:
             self.game_tree.nodes_dict[str(board)] = Node(board, self.player_num, self.player_num)
 
         current_node = self.game_tree.nodes_dict[str(board)]
+        current_nodes = [current_node]
+        children = self.game_tree.build_tree(current_nodes)
+        nodes_by_layer = {1: current_nodes, 2: children}
+        current_nodes = children
 
-        self.game_tree.build_tree([current_node])
-        children = self.game_tree.build_tree([current_node])
+        for n in range(3, self.ply + 1):
+            children = self.game_tree.build_tree(current_nodes)
+            nodes_by_layer[n] = children
+            current_nodes = children
 
-        for _ in range(self.ply - 1):
-            self.game_tree.build_tree(children)
-            children = self.game_tree.build_tree(children)
-
-        self.game_tree.set_node_values(current_node)
+        self.game_tree.set_node_values(nodes_by_layer, self.neural_net)
         max_value = current_node.children[0].value
 
         for child in current_node.children:

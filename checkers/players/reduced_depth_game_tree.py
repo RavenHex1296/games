@@ -58,15 +58,6 @@ class Node():
         if remainding_player_instances[1] == 1 and remainding_player_instances[2] == 1:
             return "Tie"
 
-    def children_to_value(self, neural_net):
-        if self.children == None or len(self.children) == 0:
-            return None
-
-        for child in self.children:
-            child.set_node_value(neural_net)
-
-        return [child.value for child in self.children]
-
     def convert_board(self, neural_net):
         converted_board = copy.deepcopy(self.state)
 
@@ -115,16 +106,6 @@ class Node():
             neural_net.build_neural_net(reduced_board)
             return neural_net.get_node(86).node_output
 
-    def set_node_value(self, neural_net):
-        if self.children == None or len(self.children) == 0:
-            self.value = self.heuristic_evaluation(neural_net)
-            return 
-
-        if self.turn == self.player_num:
-            self.value = max(self.children_to_value(neural_net))
-
-        elif self.turn == 3 - self.player_num:
-            self.value = min(self.children_to_value(neural_net))
 
 class ReducedSearchGameTree():
     def __init__(self, root_state, player_num, ply, neural_net):
@@ -214,7 +195,7 @@ class ReducedSearchGameTree():
         else:
             board[new_x][new_y] = piece
 
-        return (new_x, new_y)
+        return board
 
     def create_children(self, node):
         if node.winner != None or len(node.children) != 0:
@@ -224,24 +205,42 @@ class ReducedSearchGameTree():
         possible_moves = self.get_possible_moves(node.state, node.turn)
 
         for move in possible_moves:
-            initial_state = copy.deepcopy(node.state)
-            self.translate(move, possible_moves, initial_state)
+            new_state = self.translate(move, possible_moves, copy.deepcopy(node.state))
 
-            if str(initial_state) in list(self.nodes_dict.keys()):
-                children.append(self.nodes_dict[str(initial_state)])
-                self.nodes_dict[str(initial_state)].previous.append(node)
+            if str(new_state) in list(self.nodes_dict.keys()):
+                children.append(self.nodes_dict[str(new_state)])
+                self.nodes_dict[str(new_state)].previous.append(node)
                 continue
 
-            child = Node(initial_state, 3 - node.turn, self.player_num)
+            child = Node(new_state, 3 - node.turn, self.player_num)
             child.previous = [node]
             children.append(child)
             self.nodes_dict[str(child.state)] = child
 
         node.children = children
 
-    def set_node_values(self, current_node):
-        if current_node.value == None:
-            current_node.set_node_value(self.neural_net)
+    def set_node_values(self, nodes_by_layer, neural_net):
+        for layer in list(nodes_by_layer.keys())[::-1]:
+            for node in nodes_by_layer[layer]:
+                if layer == list(nodes_by_layer.keys())[-1]:
+                    node.value = node.heuristic_evaluation(neural_net)
+
+                else:
+                    if node.children == None or len(node.children) == 0:
+                        node.value = node.heuristic_evaluation(neural_net)
+
+                    else:
+                        if node.turn == node.player_num:
+                            #print(layer, [child in nodes_by_layer[layer + 1] for child in node.children])
+                            #print([child.value for child in node.children], "\n")
+                            #error is on 2nd layer, 2nd layer has None values?
+                            #layer 1 children have nodes not in layer 2
+                            node.value = max([child.value for child in node.children])
+
+                        elif node.turn == 3 - node.player_num:
+                            node.value = min([child.value for child in node.children])
+
+
 
     def reset_node_values(self):
         for node in list(self.nodes_dict.values()):
