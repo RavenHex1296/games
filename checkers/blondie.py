@@ -2,7 +2,7 @@ import math
 import random
 import itertools
 import numpy as np
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import time
 import copy
 import sys
@@ -11,6 +11,7 @@ from game import *
 sys.path.append("checkers/players")
 from random_player import *
 from neural_net_player import *
+from kill_player import *
 from input_player import *
 
 
@@ -138,14 +139,20 @@ def make_new_gen_v2(parents):
         child_weights = {}
         child_bias_node_nums = parent.bias_nodes
         child_mutation_rate = parent.mutation_rate * math.exp(np.random.normal(0, 1) / ((2 * (1742 ** 0.5)) ** 0.5))
-        child_k = parent.k_value * math.exp(random.normal(0, 1) / (2 ** 0.5))
+        child_k = parent.k_value * math.exp(np.random.normal(0, 1) / (2 ** 0.5))
+
+        if child_k < 1:
+            child_k = 1
+
+        if child_k > 3:
+            child_k = 3
 
         for weight in parent.node_weights:
-            weight_value = parent.node_weights[weight] + child_mutation_rat * np.random.normal(0, 1)
+            weight_value = parent.node_weights[weight] + child_mutation_rate * np.random.normal(0, 1)
             #assert abs(weight_value) - abs(parent.node_weights[weight]) < 0.3, "Child weight value changed too much"
             child_weights[weight] = weight_value
 
-        child = EvolvedNeuralNet(parent.nodes, child_weights, child_bias_node_nums, parent.piece_difference_node, child_mutation_rate, child_k)
+        child = EvolvedNeuralNet(parent.nodes, child_weights, child_bias_node_nums, parent.piece_difference_node_num, child_mutation_rate, child_k)
         assert child != parent, "Child neural net is the same as parent"
         new_gen.append(child)
 
@@ -207,14 +214,13 @@ def run_games(players, num_games):
     return win_data
 
 
-def get_subset(choices, excluded_nets, max_elements):
+def get_subset(choices, excluded_net, max_elements):
     subset = []
-    choices.remove(excluded_nets[0])
 
-    while len(subset) < 5:
+    while len(subset) < max_elements:
         random_net = random.choice(choices)
 
-        if random_net not in excluded_nets:
+        if random_net != excluded_net:
             subset.append(random_net)
 
     return subset
@@ -224,11 +230,11 @@ def evaluation(neural_nets):
     payoff_data = {}
 
     for neural_net in neural_nets:
-        comparing_nets = get_subset(neural_nets, [neural_net], 5)
+        comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 5)
         payoff_data[neural_net] = 0
 
         for net in comparing_nets:
-            game = Checkers([NNPlayer(4, neural_net), NNPlayer(4, net)])
+            game = Checkers([NNPlayer(2, neural_net), NNPlayer(2, net)])
             game.run_to_completion()
 
             if game.winner == 1:
@@ -246,36 +252,44 @@ def select_parents(payoff_data):
     return sorted_nets[:int(len(sorted_nets) / 2)]
 
 
-def find_max_payoff(evaluation_data, return_net=False):
-    max_total_payoff_net = list(first_evaluation_data.keys())[0]
+def find_average_payoff(neural_nets, return_net=False):
+    payoff_values = []
 
-    for neural_net in evaluation_data:
-        if evaluation_data[neural_net] > evaluation_data[max_total_payoff_net]:
-            max_total_payoff_net = neural_net
+    for neural_net in neural_nets:
+        game = Checkers([NNPlayer(2, neural_net), KillPlayer()])
+        game.run_to_completion()
+        print(game.winner)
+        if game.winner == 1:
+            payoff_values.append(1)
 
-    if return_net == True:
-        to_print_data = copy.deepcopy(max_total_payoff_net.__dict__)
-        to_print_data['nodes'] = [node.node_num for node in flatten(to_print_data['nodes'])]
-        file_object.write(f'{max_total_payoff_net.__dict__} \n')
+        if game.winner == 2:
+            payoff_values.append(-2)
 
-    return evaluation_data[max_total_payoff_net]
+        if game.winner == "Tie":
+            payoff_values.append(0)
+
+    #if return_net == True:
+        #to_print_data = copy.deepcopy(max_total_payoff_net.__dict__)
+        #to_print_data['nodes'] = [node.node_num for node in flatten(to_print_data['nodes'])]
+        #file_object.write(f'{max_total_payoff_net.__dict__} \n')
+    print(payoff_values)
+    return sum(payoff_values) / len(payoff_values)
 
 
 file_object = open('neural_nets.txt', 'a')
 
 
 def run(num_first_gen, num_gen):
-    max_payoff_values = {}
+    average_payoff_values = {}
     return_net = False
     start_time = time.time()
     first_gen = make_first_gen(num_first_gen)
     evaluation_data = evaluation(first_gen)
     #print("Evaluation for Gen 0 Done")
-    #testing next_gen_parents = select_parents(second_evaluation_data)
     next_gen_parents = select_parents(evaluation_data)
     #print("Parents from Gen 0 have been selected")
-    #max_payoff_values[0] = find_max_payoff(evaluation_data)
-    #print("Got Max Total Payoff Value for Gen 0")
+    average_payoff_values[0] = find_average_payoff(next_gen_parents)
+    #print("Got Average Total Payoff Value for Gen 0")
     current_gen = make_new_gen_v2(next_gen_parents)
     print(f"Gen 0 took {time.time() - start_time} seconds to complete")
 
@@ -283,27 +297,26 @@ def run(num_first_gen, num_gen):
     for n in range(1, num_gen):
         start_time = time.time()
         evaluation_data = evaluation(current_gen)
-        #print(f"FEvaluation for Gen {n} Done")
+        #print(f"Evaluation for Gen {n} Done")
         #testing next_gen_parents = select_parents(second_evaluation_data)
         next_gen_parents = select_parents(evaluation_data)
-        #print(f"Parents from Gen {n} have been selected")            
+        print(f"Parents from Gen {n} have been selected")            
 
-        if n == num_gen - 1:
-            return_net = True
+        #if n == num_gen - 1:
+        #    return_net = True
 
         #max_payoff_values[n] = find_max_payoff(evaluation_data, return_net)
-
-        #print(f"Got Max Total Payoff Value for Gen {n}")
+        average_payoff_values[n] = find_average_payoff(next_gen_parents)
+        print(f"Got Average Total Payoff Value for Gen {n}")
         current_gen = make_new_gen_v2(next_gen_parents)
         print(f"Gen {n} took {time.time() - start_time} seconds to complete")
 
-    #return max_payoff_values
-
+    return average_payoff_values
 
 
 total_values = {}
-first_gen_size = 30
-num_generations = 5
+first_gen_size = 6
+num_generations = 10
 num_trials = 1
 
 #logs.write(f'HYPERPARAMETERS \n\t Networks in first generation: {first_gen_size} \n\t Selection percentage: 0.5')
@@ -312,19 +325,23 @@ for n in range(0, num_generations):
     total_values[n] = 0
 
 #run(first_gen_size, num_generations)
-first_gen = make_first_gen(2)
-start_time = time.time()
-game = Checkers([NNPlayer(3, first_gen[0]), NNPlayer(3, first_gen[0])])
-game.run_to_completion()
-print(f"{game.winner} won in {time.time() - start_time} seconds with 3 ply")
 
-'''
 for n in range(0, num_trials):
     start_time = time.time()
-    max_payoff_values = run(first_gen_size, num_generations)
+    average_payoff_values = run(first_gen_size, num_generations)
 
-    for layer in max_payoff_values:
-        total_values[layer] += max_payoff_values[layer]
+    for layer in average_payoff_values:
+        total_values[layer] += average_payoff_values[layer]
 
     print(f"Trial {n} took {time.time() - start_time} seconds to complete")
-'''
+
+
+x_values = [key for key in list(total_values.keys())]
+y_values = [value / num_trials for value in list(total_values.values())]
+
+plt.style.use('bmh')
+plt.plot(x_values, y_values)
+plt.xlabel('num generations')
+plt.ylabel('average total payoff')
+plt.legend(loc="best")
+plt.savefig('blondie.png')
