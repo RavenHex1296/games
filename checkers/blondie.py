@@ -230,7 +230,7 @@ def evaluation(neural_nets):
     payoff_data = {}
 
     for neural_net in neural_nets:
-        comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 5)
+        comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 3) #change last number to change number compared to
         payoff_data[neural_net] = 0
 
         for net in comparing_nets:
@@ -243,7 +243,8 @@ def evaluation(neural_nets):
             elif game.winner == 2:
                 payoff_data[neural_net] -= 2
 
-    return payoff_data 
+    print(payoff_data)
+    return payoff_data
 
 
 def select_parents(payoff_data):
@@ -256,9 +257,10 @@ def find_average_payoff(neural_nets, return_net=False):
     payoff_values = []
 
     for neural_net in neural_nets:
-        game = Checkers([NNPlayer(2, neural_net), KillPlayer()])
+        game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])
         game.run_to_completion()
         print(game.winner)
+
         if game.winner == 1:
             payoff_values.append(1)
 
@@ -276,7 +278,7 @@ def find_average_payoff(neural_nets, return_net=False):
     return sum(payoff_values) / len(payoff_values)
 
 
-file_object = open('neural_nets.txt', 'a')
+file_object = open('blondie.txt', 'a')
 
 
 def run(num_first_gen, num_gen):
@@ -315,7 +317,7 @@ def run(num_first_gen, num_gen):
 
 
 total_values = {}
-first_gen_size = 6
+first_gen_size = 10
 num_generations = 10
 num_trials = 1
 

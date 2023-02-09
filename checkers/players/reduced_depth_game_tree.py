@@ -212,7 +212,13 @@ class ReducedSearchGameTree():
                 self.nodes_dict[str(new_state)].previous.append(node)
                 continue
 
-            child = Node(new_state, 3 - node.turn, self.player_num)
+            #multiple captures = new layer = incorrect self.turn
+            if (2, 2) in move[1] or (2, -2) in move[1] or (-2, 2) in move[1] or (-2, -2) in move[1]:
+                child = Node(new_state, node.turn, self.player_num)
+
+            else:
+                child = Node(new_state, 3 - node.turn, self.player_num)
+
             child.previous = [node]
             children.append(child)
             self.nodes_dict[str(child.state)] = child
