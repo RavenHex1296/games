@@ -71,13 +71,10 @@ class Checkers:
     def get_possible_moves(self, player):
         possible_moves = []
 
-        board_elements = []
-
         for i in range(len(self.board)):
             for j in range(len(self.board[i])):
                 if abs(self.board[i][j]) == player.player_num:
                     possible_translations = self.get_possible_translations((i, j))
-                    board_elements.append(self.board[i][j])
 
                     for translation in possible_translations:
                         possible_moves.append(((i, j), translation))

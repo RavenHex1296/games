@@ -50,7 +50,7 @@ class NNPlayer:
         if board not in list(self.game_tree.nodes_dict.keys()):
             self.game_tree.nodes_dict[str(board)] = Node(board, self.player_num, self.player_num)
 
-        current_node = self.game_tree.nodes_dict[str(board)]
+        current_node = self.game_tree.nodes_dict[str(copy.deepcopy(board))]
         current_nodes = [current_node]
         children = self.game_tree.build_tree(current_nodes)
         nodes_by_layer = {1: current_nodes, 2: children}
@@ -69,11 +69,12 @@ class NNPlayer:
                 max_value = child.value
 
         optimal_choices = []
-
+        #num choices < num children sometimes fsr?
         for choice in choices:
             new_board = self.translate(choice, choices, copy.deepcopy(board))
-
             board_value = self.game_tree.nodes_dict[str(new_board)].value
+            #if self.game_tree.nodes_dict[str(new_board)] not in current_node.children:
+                #print(new_board)
 
             if board_value == max_value:
                 optimal_choices.append(choice)

@@ -161,7 +161,7 @@ class ReducedSearchGameTree():
         for i in range(len(board)):
             for j in range(len(board[i])):
                 if abs(board[i][j]) == player_turn:
-                    possible_translations = self.get_possible_translations((i, j), board)
+                    possible_translations = self.get_possible_translations((i, j), copy.deepcopy(board))
                     board_elements.append(board[i][j])
 
                     for translation in possible_translations:
@@ -208,12 +208,12 @@ class ReducedSearchGameTree():
             new_state = self.translate(move, possible_moves, copy.deepcopy(node.state))
 
             if str(new_state) in list(self.nodes_dict.keys()):
+                #possibly its possible to have both players have that state
                 children.append(self.nodes_dict[str(new_state)])
                 self.nodes_dict[str(new_state)].previous.append(node)
                 continue
 
-            #multiple captures = new layer = incorrect self.turn
-            if (2, 2) in move[1] or (2, -2) in move[1] or (-2, 2) in move[1] or (-2, -2) in move[1]:
+            if move[1] in [(2, 2), (-2, -2), (2, -2), (-2, 2)]:
                 child = Node(new_state, node.turn, self.player_num)
 
             else:
@@ -236,17 +236,20 @@ class ReducedSearchGameTree():
                         node.value = node.heuristic_evaluation(neural_net)
 
                     else:
+                        converted_scores = []
+
+                        for child in node.children:
+                            if child.turn == node.turn:
+                                converted_scores.append(child.value)
+
+                            else:
+                                converted_scores.append(-child.value)
+
                         if node.turn == node.player_num:
-                            #print(layer, [child in nodes_by_layer[layer + 1] for child in node.children])
-                            #print([child.value for child in node.children], "\n")
-                            #error is on 2nd layer, 2nd layer has None values?
-                            #layer 1 children have nodes not in layer 2
-                            node.value = max([child.value for child in node.children])
+                            node.value = max(converted_scores)
 
                         elif node.turn == 3 - node.player_num:
-                            node.value = min([child.value for child in node.children])
-
-
+                            node.value = min(converted_scores)
 
     def reset_node_values(self):
         for node in list(self.nodes_dict.values()):

@@ -259,7 +259,7 @@ def find_average_payoff(neural_nets, return_net=False):
     for neural_net in neural_nets:
         game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])
         game.run_to_completion()
-        print(game.winner)
+        print("avg payoff funct vs randomplayer", game.winner)
 
         if game.winner == 1:
             payoff_values.append(1)
