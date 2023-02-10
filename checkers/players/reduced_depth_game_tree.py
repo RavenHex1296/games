@@ -118,10 +118,6 @@ class ReducedSearchGameTree():
         self.neural_net = neural_net
 
     def get_valid_translations(self, coord, board):
-        #print(self.board)
-        #print(coord)
-        #print(self.board[coord[0]][coord[1]], "\n")
-
         if board[coord[0]][coord[1]] == 1:
             return [(-1, 1), (-1, -1)]
 
@@ -143,11 +139,11 @@ class ReducedSearchGameTree():
             new_kill_x = coord[0] + translation[0] * 2
             new_kill_y = coord[1] + translation[1] * 2
 
-            if new_x in [n for n in range(8)] and new_y in [n for n in range(8)]:
+            if new_x in [n for n in range(0, 8)] and new_y in [n for n in range(0, 8)]:
                 if board[new_x][new_y] == 0:
                     possible_regular_translations.append(translation)
 
-                if new_kill_x in [n for n in range(8)] and new_kill_y in [n for n in range(8)]:
+                if new_kill_x in [n for n in range(0, 8)] and new_kill_y in [n for n in range(0, 8)]:
                     if board[new_x][new_y] == (3 - abs(board[coord[0]][coord[1]])) and board[new_kill_x][new_kill_y] == 0:
                         possible_kill_translations.append((translation[0] * 2, translation[1] * 2))
 
@@ -156,17 +152,14 @@ class ReducedSearchGameTree():
     def get_possible_moves(self, board, player_turn):
         possible_moves = []
 
-        board_elements = []
-
         for i in range(len(board)):
             for j in range(len(board[i])):
                 if abs(board[i][j]) == player_turn:
                     possible_translations = self.get_possible_translations((i, j), copy.deepcopy(board))
-                    board_elements.append(board[i][j])
 
                     for translation in possible_translations:
                         possible_moves.append(((i, j), translation))
-        
+
         return possible_moves
 
     def translate(self, chosen_move, possible_moves, board):
@@ -200,6 +193,8 @@ class ReducedSearchGameTree():
     def create_children(self, node):
         if node.winner != None or len(node.children) != 0:
             return
+        
+        #possible moves limited by previous move if said move was a kill, fix that
 
         children = []
         possible_moves = self.get_possible_moves(node.state, node.turn)

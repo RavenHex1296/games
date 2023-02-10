@@ -81,21 +81,6 @@ class Checkers:
         
         return possible_moves
 
-    def get_possible_pieces(self, player):
-        movable_pieces = []
-        all_piece_coords = []
-
-        for i in board:
-            for j in board[i]:
-                if abs(board[i][j]) == player.player_number:
-                    all_piece_coords.append((i, j))
-
-        for coord in all_piece_coords:
-            if len(self.get_possible_translations(coord)) > 0:
-                movable_pieces.append(coord)
-        
-        return movable_pieces
-
     def translate(self, chosen_move, possible_moves):
         x, y = chosen_move[0]
         new_x = x + chosen_move[1][0]
