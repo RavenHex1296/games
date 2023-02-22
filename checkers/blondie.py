@@ -243,7 +243,6 @@ def evaluation(neural_nets):
             elif game.winner == 2:
                 payoff_data[neural_net] -= 2
 
-    print(payoff_data)
     return payoff_data
 
 
@@ -259,7 +258,6 @@ def find_average_payoff(neural_nets, return_net=False):
     for neural_net in neural_nets:
         game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])
         game.run_to_completion()
-        print("avg payoff funct vs randomplayer", game.winner)
 
         if game.winner == 1:
             payoff_values.append(1)
@@ -274,7 +272,6 @@ def find_average_payoff(neural_nets, return_net=False):
         #to_print_data = copy.deepcopy(max_total_payoff_net.__dict__)
         #to_print_data['nodes'] = [node.node_num for node in flatten(to_print_data['nodes'])]
         #file_object.write(f'{max_total_payoff_net.__dict__} \n')
-    print(payoff_values)
     return sum(payoff_values) / len(payoff_values)
 
 

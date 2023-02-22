@@ -7,7 +7,7 @@ from input_player import *
 import time
 
 
-players = [InputPlayer(), RandomPlayer()]
+players = [RandomPlayer(), RandomPlayer()]
 game = Checkers(players)
 game.run_to_completion()
 print(game.winner)

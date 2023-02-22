@@ -16,31 +16,16 @@ class NNPlayer:
         root_state = [[(i + j) % 2 * ((3 - ((j < 3) - (j > 4))) % 3) for i in range(8)] for j in range(8)]
         self.game_tree = ReducedSearchGameTree(root_state, self.player_num, self.ply, self.neural_net)
 
-    def translate(self, chosen_move, possible_moves, board):
+    def translate(self, chosen_move, board):
         x, y = chosen_move[0]
-        new_x = x + chosen_move[1][0]
-        new_y = y + chosen_move[1][1]
-
-        while new_x not in [0, 1, 2, 3, 4, 5, 6, 7] or new_y not in [0, 1, 2, 3, 4, 5, 6, 7]:
-            chosen_move = random.choice(possible_moves)
-            new_x = x + chosen_move[1][0]
-            new_y = y + chosen_move[1][1]
-
         piece = board[x][y]
         board[x][y] = 0
 
-        if chosen_move[1] in [(2, 2), (2, -2), (-2, 2), (-2, -2)]:
-            x_change, y_change = chosen_move[1][0] / 2, chosen_move[1][1] / 2
-            board[int(x + x_change)][int(y + y_change)] = 0
+        board[x + chosen_move[1][0]][y + chosen_move[1][1]] = piece
 
-        if new_x == 0 and piece == 1:
-            board[new_x][new_y] = -1
-
-        elif new_x == 7 and piece == 2:
-            board[new_x][new_y] = -2
-
-        else:
-            board[new_x][new_y] = piece
+        if len(chosen_move[2]) > 0:
+            for killed_coord in chosen_move[2]:
+                board[killed_coord[0]][killed_coord[1]] = 0
 
         return board
 
@@ -61,6 +46,7 @@ class NNPlayer:
             nodes_by_layer[n] = children
             current_nodes = children
 
+        assert len(current_node.children) == len(choices), "Node has different number of children than choices"
         self.game_tree.set_node_values(nodes_by_layer, self.neural_net)
         max_value = current_node.children[0].value
 
@@ -71,7 +57,7 @@ class NNPlayer:
         optimal_choices = []
         #num choices < num children sometimes fsr?
         for choice in choices:
-            new_board = self.translate(choice, choices, copy.deepcopy(board))
+            new_board = self.translate(choice, copy.deepcopy(board))
             board_value = self.game_tree.nodes_dict[str(new_board)].value
             #if self.game_tree.nodes_dict[str(new_board)] not in current_node.children:
                 #print(new_board)

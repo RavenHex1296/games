@@ -41,22 +41,18 @@ class Node():
         return flattened_board
 
     def check_for_winner(self):
-        flattened_board = self.flatten(copy.deepcopy(self.state))
-        remainding_players = []
-        remainding_player_instances = {1: 0, 2: 0}
+        
+        flattened_board = [piece for row in self.state for piece in row]
+        all_pieces = [abs(piece) for piece in flattened_board if piece != 0]
 
-        for entry in flattened_board:
-            if entry != 0:
-                if abs(entry) not in remainding_players:
-                    remainding_players.append(abs(entry))
-            
-                remainding_player_instances[abs(entry)] += 1
+        p1_count = all_pieces.count(1)
+        p2_count = all_pieces.count(2)
 
-        if len(remainding_players) == 1:
-            return remainding_players[0]
+        if p1_count == 0: return 2
+        if p2_count == 0: return 1
+        if p1_count == 1 and p2_count == 1: return 'Tie'
 
-        if remainding_player_instances[1] == 1 and remainding_player_instances[2] == 1:
-            return "Tie"
+        return None
 
     def convert_board(self, neural_net):
         converted_board = copy.deepcopy(self.state)
@@ -127,80 +123,117 @@ class ReducedSearchGameTree():
         if board[coord[0]][coord[1]] == 2:
             return [(1, -1), (1, 1)]
 
-    def get_possible_translations(self, coord, board):
-        valid_regular_translations = self.get_valid_translations(coord, board)
+    def add_moves_to_check(self, current_piece, current_coords, captured_coords, moves_to_check):
+        
+        direction = 1 - 2*(current_piece % 2)
 
-        possible_regular_translations = []
-        possible_kill_translations = []
+        moves_to_check.append([current_coords, [direction, -1], captured_coords])
+        moves_to_check.append([current_coords, [direction, 1], captured_coords])
 
-        for translation in valid_regular_translations:
-            new_x = coord[0] + translation[0]
-            new_y = coord[1] + translation[1]
-            new_kill_x = coord[0] + translation[0] * 2
-            new_kill_y = coord[1] + translation[1] * 2
+        if current_piece < 0:
+            moves_to_check.append([current_coords, [-direction, -1], captured_coords])
+            moves_to_check.append([current_coords, [-direction, 1], captured_coords])
+        
+        return moves_to_check
 
-            if new_x in [n for n in range(0, 8)] and new_y in [n for n in range(0, 8)]:
-                if board[new_x][new_y] == 0:
-                    possible_regular_translations.append(translation)
+    def nested_list_in_list(self, parent_list, nested_list):
+        for l in parent_list:
+            if all(x == y for x, y in zip(l, nested_list)):
+                return True
+        return False
 
-                if new_kill_x in [n for n in range(0, 8)] and new_kill_y in [n for n in range(0, 8)]:
-                    if board[new_x][new_y] == (3 - abs(board[coord[0]][coord[1]])) and board[new_kill_x][new_kill_y] == 0:
-                        possible_kill_translations.append((translation[0] * 2, translation[1] * 2))
-
-        return possible_kill_translations + possible_regular_translations
-
-    def get_possible_moves(self, board, player_turn):
+    def get_possible_moves(self, player_num, board):
         possible_moves = []
 
-        for i in range(len(board)):
-            for j in range(len(board[i])):
-                if abs(board[i][j]) == player_turn:
-                    possible_translations = self.get_possible_translations((i, j), copy.deepcopy(board))
+        # loop through all coordinates
 
-                    for translation in possible_translations:
-                        possible_moves.append(((i, j), translation))
+        for i in range(8):
+            for j in range(8):
 
+                current_coords = (i, j)
+                current_piece = board[i][j]
+
+                # check if there is a piece on the current coord
+
+                if abs(current_piece) == player_num:
+
+                    # get moves that the piece might be able to do
+
+                    moves_to_check = self.add_moves_to_check(current_piece, current_coords, [], [])
+
+                    while len(moves_to_check) > 0:
+
+                        # check first move in moves_to_check
+
+                        move_to_check = moves_to_check.pop(0) # moves_to_check is a queue
+                        coord, translation_to_check, captured_coords = move_to_check
+
+                        new_i, new_j = self.translate(coord, translation_to_check)
+                        if new_i < 0 or new_i > 7 or new_j < 0 or new_j > 7: continue
+                        new_piece = board[new_i][new_j]
+
+                        # check if the new spot is empty
+
+                        if abs(new_piece) == 0 and captured_coords == []:
+                            possible_moves.append(move_to_check)
+                    
+                        # check if the opponent is in the new spot
+
+                        elif abs(new_piece) == 3 - player_num:
+                            
+                            # if so, and if the next next spot is empty, add that spot to moves_to_check
+
+                            next_translation = [2*t for t in translation_to_check]
+                            new_new_i, new_new_j = self.translate(coord, next_translation)
+                            if new_new_i < 0 or new_new_i > 7 or new_new_j < 0 or new_new_j > 7: continue
+                            new_new_piece = board[new_new_i][new_new_j]
+
+                            if abs(new_new_piece) == 0 and not self.nested_list_in_list(captured_coords, [new_i, new_j]):
+
+                                # add capture to possible moves
+
+                                previous_translation = self.find_translation(coord, current_coords)
+                                new_translation = self.translate(previous_translation, next_translation)
+                                new_captured_coords = captured_coords + [(new_i, new_j)]
+                                possible_moves.append([current_coords, new_translation, new_captured_coords])
+
+                                # add potential to combo captures
+
+                                next_next_coords = self.translate(current_coords, new_translation)
+                                moves_to_check = self.add_moves_to_check(current_piece, next_next_coords, new_captured_coords, moves_to_check)
+
+                                # then, it'll loop back to the start of moves_to_check
+        
         return possible_moves
 
-    def translate(self, chosen_move, possible_moves, board):
-        x, y = chosen_move[0]
-        new_x = x + chosen_move[1][0]
-        new_y = y + chosen_move[1][1]
+    def translate(self, coord1, coord2):
+        return (coord1[0] + coord2[0], coord1[1] + coord2[1])
 
-        while new_x not in [0, 1, 2, 3, 4, 5, 6, 7] or new_y not in [0, 1, 2, 3, 4, 5, 6, 7]:
-            chosen_move = random.choice(possible_moves)
-            new_x = x + chosen_move[1][0]
-            new_y = y + chosen_move[1][1]
+    def find_translation(self, coord1, coord2):
+        return (coord1[0] - coord2[0], coord1[1] - coord2[1])
 
+    def update_board(self, move, board):
+        x, y = move[0]
         piece = board[x][y]
         board[x][y] = 0
 
-        if chosen_move[1] in [(2, 2), (2, -2), (-2, 2), (-2, -2)]:
-            x_change, y_change = chosen_move[1][0] / 2, chosen_move[1][1] / 2
-            board[int(x + x_change)][int(y + y_change)] = 0
+        board[x + move[1][0]][y + move[1][1]] = piece
 
-        if new_x == 0 and piece == 1:
-            board[new_x][new_y] = -1
-
-        elif new_x == 7 and piece == 2:
-            board[new_x][new_y] = -2
-
-        else:
-            board[new_x][new_y] = piece
+        if len(move[2]) > 0:
+            for killed_coord in move[2]:
+                board[killed_coord[0]][killed_coord[1]] = 0
 
         return board
 
     def create_children(self, node):
         if node.winner != None or len(node.children) != 0:
             return
-        
-        #possible moves limited by previous move if said move was a kill, fix that
 
         children = []
-        possible_moves = self.get_possible_moves(node.state, node.turn)
+        possible_moves = self.get_possible_moves(node.turn, node.state)
 
         for move in possible_moves:
-            new_state = self.translate(move, possible_moves, copy.deepcopy(node.state))
+            new_state = self.update_board(move, copy.deepcopy(node.state))
 
             if str(new_state) in list(self.nodes_dict.keys()):
                 #possibly its possible to have both players have that state
@@ -208,12 +241,7 @@ class ReducedSearchGameTree():
                 self.nodes_dict[str(new_state)].previous.append(node)
                 continue
 
-            if move[1] in [(2, 2), (-2, -2), (2, -2), (-2, 2)]:
-                child = Node(new_state, node.turn, self.player_num)
-
-            else:
-                child = Node(new_state, 3 - node.turn, self.player_num)
-
+            child = Node(new_state, 3 - node.turn, self.player_num)
             child.previous = [node]
             children.append(child)
             self.nodes_dict[str(child.state)] = child
@@ -231,20 +259,11 @@ class ReducedSearchGameTree():
                         node.value = node.heuristic_evaluation(neural_net)
 
                     else:
-                        converted_scores = []
-
-                        for child in node.children:
-                            if child.turn == node.turn:
-                                converted_scores.append(child.value)
-
-                            else:
-                                converted_scores.append(-child.value)
-
                         if node.turn == node.player_num:
-                            node.value = max(converted_scores)
+                            node.value = max([child.value for child in node.children])
 
                         elif node.turn == 3 - node.player_num:
-                            node.value = min(converted_scores)
+                            node.value = min([child.value for child in node.children])
 
     def reset_node_values(self):
         for node in list(self.nodes_dict.values()):

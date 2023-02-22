@@ -17,183 +17,163 @@ class Checkers:
         self.players[0].set_player_number(1)
         self.players[1].set_player_number(2)
 
-    def get_valid_translations(self, coord):
-        #print(self.board)
-        #print(coord)
-        #print(self.board[coord[0]][coord[1]], "\n")
+    def run_to_completion(self):
 
-        if self.board[coord[0]][coord[1]] == 1:
-            return [(-1, 1), (-1, -1)]
+        while self.winner == None:
+            self.logs.write(f"Beginning round {self.round} \n")
 
-        if self.board[coord[0]][coord[1]] == -1 or self.board[coord[0]][coord[1]] == -2:
-            return [(-1, 1), (-1, -1), (1, 1), (1, -1)]
+            for player in self.players:
 
-        if self.board[coord[0]][coord[1]] == 2:
-            return [(1, -1), (1, 1)]
+                possible_moves = self.get_possible_moves(player)
 
-    def get_valid_kill_translations(self, coord):
-        if self.board[coord[0]][coord[1]] == 1:
-            return [(-2, 2), (-2, -2)]
+                if possible_moves == []:
+                    self.winner = 3 - player.player_num
+                    break
 
-        if self.board[coord[0]][coord[1]] == 2:
-            return [(2, -2), (2, 2)]
+                move = player.choose_move(self.board, possible_moves)
+                if move == None: move = random.choice(possible_moves)
 
-        else:
-            return [(-2, 2), (-2, -2), (2, -2), (2, 2)]
+                self.update_board(player, move)
+                
+                self.winner = self.check_for_winner()
+                if self.winner: break
 
-    def get_possible_translations(self, coord):
-        valid_regular_translations = self.get_valid_translations(coord)
+                self.logs.write(f"\tPlayer {player.player_num} moved from {move[0]} to {move[0][0] + move[1][0], move[0][1] + move[1][1]} and captured pieces at {move[2]}\n")
+                self.log_board()
 
-        possible_regular_translations = []
-        possible_kill_translations = []
+            self.logs.write(f"Ending round {self.round} \n\n")
+            self.round += 1
 
-        for translation in valid_regular_translations:
-            new_x = coord[0] + translation[0]
-            new_y = coord[1] + translation[1]
-            new_kill_x = coord[0] + translation[0] * 2
-            new_kill_y = coord[1] + translation[1] * 2
+    def get_possible_moves(self, player, board=None):
+        
+        if board == None: board = self.board
 
-            if new_x in [n for n in range(8)] and new_y in [n for n in range(8)]:
-                if self.board[new_x][new_y] == 0:
-                    possible_regular_translations.append(translation)
-
-                if new_kill_x in [n for n in range(8)] and new_kill_y in [n for n in range(8)]:
-                    if self.board[new_x][new_y] == (3 - abs(self.board[coord[0]][coord[1]])) and self.board[new_kill_x][new_kill_y] == 0:
-                        possible_kill_translations.append((translation[0] * 2, translation[1] * 2))
-
-        return possible_kill_translations + possible_regular_translations
-        #if len(possible_kill_translations) > 0:
-        #    return possible_kill_translations
-
-        #else:
-        #    return possible_regular_translations
-
-    def get_possible_moves(self, player):
         possible_moves = []
 
-        for i in range(len(self.board)):
-            for j in range(len(self.board[i])):
-                if abs(self.board[i][j]) == player.player_num:
-                    possible_translations = self.get_possible_translations((i, j))
+        # loop through all coordinates
 
-                    for translation in possible_translations:
-                        possible_moves.append(((i, j), translation))
+        for i in range(8):
+            for j in range(8):
+
+                current_coords = (i, j)
+                current_piece = board[i][j]
+
+                # check if there is a piece on the current coord
+
+                if abs(current_piece) == player.player_num:
+
+                    # get moves that the piece might be able to do
+
+                    moves_to_check = self.add_moves_to_check(current_piece, current_coords, [], [])
+
+                    while len(moves_to_check) > 0:
+
+                        # check first move in moves_to_check
+
+                        move_to_check = moves_to_check.pop(0) # moves_to_check is a queue
+                        coord, translation_to_check, captured_coords = move_to_check
+
+                        new_i, new_j = self.translate(coord, translation_to_check)
+                        if new_i < 0 or new_i > 7 or new_j < 0 or new_j > 7: continue
+                        new_piece = board[new_i][new_j]
+
+                        # check if the new spot is empty
+
+                        if abs(new_piece) == 0 and captured_coords == []:
+                            possible_moves.append(move_to_check)
+                    
+                        # check if the opponent is in the new spot
+
+                        elif abs(new_piece) == 3 - player.player_num:
+                            
+                            # if so, and if the next next spot is empty, add that spot to moves_to_check
+
+                            next_translation = [2*t for t in translation_to_check]
+                            new_new_i, new_new_j = self.translate(coord, next_translation)
+                            if new_new_i < 0 or new_new_i > 7 or new_new_j < 0 or new_new_j > 7: continue
+                            new_new_piece = board[new_new_i][new_new_j]
+
+                            if abs(new_new_piece) == 0 and not self.nested_list_in_list(captured_coords, [new_i, new_j]):
+
+                                # add capture to possible moves
+
+                                previous_translation = self.find_translation(coord, current_coords)
+                                new_translation = self.translate(previous_translation, next_translation)
+                                new_captured_coords = captured_coords + [(new_i, new_j)]
+                                possible_moves.append([current_coords, new_translation, new_captured_coords])
+
+                                # add potential to combo captures
+
+                                next_next_coords = self.translate(current_coords, new_translation)
+                                moves_to_check = self.add_moves_to_check(current_piece, next_next_coords, new_captured_coords, moves_to_check)
+
+                                # then, it'll loop back to the start of moves_to_check
         
         return possible_moves
 
-    def translate(self, chosen_move, possible_moves):
-        x, y = chosen_move[0]
-        new_x = x + chosen_move[1][0]
-        new_y = y + chosen_move[1][1]
-
-        while new_x not in [0, 1, 2, 3, 4, 5, 6, 7] or new_y not in [0, 1, 2, 3, 4, 5, 6, 7]:
-            chosen_move = random.choice(possible_moves)
-            new_x = x + chosen_move[1][0]
-            new_y = y + chosen_move[1][1]
-
-        piece = self.board[x][y]
-        self.board[x][y] = 0
-
-        if chosen_move[1] in [(2, 2), (2, -2), (-2, 2), (-2, -2)]:
-            x_change, y_change = chosen_move[1][0] / 2, chosen_move[1][1] / 2
-            self.board[int(x + x_change)][int(y + y_change)] = 0
-
-        if new_x == 0 and piece == 1:
-            self.board[new_x][new_y] = -1
-
-        elif new_x == 7 and piece == 2:
-            self.board[new_x][new_y] = -2
-
-        else:
-            self.board[new_x][new_y] = piece
-
-        return (new_x, new_y)
-
-    def move_again(self, possible_translations):
-        if (-2, 2) not in possible_translations and (-2, -2) not in possible_translations and (2, 2) not in possible_translations and (2, -2) not in possible_translations:
-            return False
-
-        return True
-
-    def complete_round(self):
-        self.logs.write(f"Beginning round {self.round} \n")
-
-        for player in self.players:
-            possible_moves = self.get_possible_moves(player)
-
-            if len(possible_moves) == 0:
-                self.winner = 3 - player.player_num
-                break
-
-            chosen_move = player.choose_move(copy.deepcopy(self.board), possible_moves)
-
-            if chosen_move not in possible_moves:
-                chosen_move = random.choice(possible_moves)
-
-            new_coords = self.translate(chosen_move, possible_moves)
-
-            self.logs.write(f"\tPlayer {player.player_num} moved from {chosen_move[0]} to {new_coords} \n")
-
-            while chosen_move[1] in [(-2, -2), (-2, 2), (2, -2), (2, 2)]:
-                invalid_translations = [(1, 1), (1, -1), (-1, -1), (-1, 1)]
-                possible_translations = [translation for translation in self.get_possible_translations(new_coords) if translation not in invalid_translations]
-                possible_moves = [(new_coords, translation) for translation in possible_translations] + [(new_coords, (0, 0))]
-
-                if self.move_again(possible_translations) == True:
-                    chosen_move = player.choose_move(copy.deepcopy(self.board), possible_moves)
-                    new_coords = self.translate(chosen_move, possible_moves)
-                    self.logs.write(f"\tPlayer {player.player_num} moved from {chosen_move[0]} to {new_coords} \n")
-
-                else:
-                    self.logs.write(f"\tPlayer {player.player_num} didn't move again \n")
-                    break
-
-            self.log_board()
-
-        self.logs.write(f"Ending round {self.round} \n\n")
-        self.round += 1
-
-    def run_to_completion(self):
-        while self.winner == None:
-            if self.round <= 100:
-                self.complete_round()
-
-            if self.round > 100:
-                self.winner = "Tie"
-
-        if self.winner != 'Tie':
-            self.logs.write(f'Player {self.winner} won')
-
-        else:
-            self.logs.write('Tie')
-
-
-    def flatten(self, board):
-        flattened_board = []
+    def add_moves_to_check(self, current_piece, current_coords, captured_coords, moves_to_check):
         
-        for row in board:
-            flattened_board += row
+        direction = 1 - 2*(current_piece % 2)
 
-        return flattened_board
+        moves_to_check.append([current_coords, [direction, -1], captured_coords])
+        moves_to_check.append([current_coords, [direction, 1], captured_coords])
+
+        if current_piece < 0:
+            moves_to_check.append([current_coords, [-direction, -1], captured_coords])
+            moves_to_check.append([current_coords, [-direction, 1], captured_coords])
+        
+        return moves_to_check
+
+    def update_board(self, player, move):
+
+        current_coords, translation, captured_coords = move
+        new_coords = self.translate(current_coords, translation)
+
+        self.board[new_coords[0]][new_coords[1]] = self.board[current_coords[0]][current_coords[1]] # set new coord to the old coord's piece
+        self.board[current_coords[0]][current_coords[1]] = 0 # set old coord to 0
+
+        for coords in captured_coords:
+            self.board[coords[0]][coords[1]] = 0 # set captured coords to 0
+        
+        # turn pieces into kings
+
+        p1_piece_should_be_king = (player.player_num == 1 and new_coords[0] == 0 and self.board[new_coords[0]][new_coords[1]] > 0)
+        p2_piece_should_be_king = (player.player_num == 2 and new_coords[0] == 7 and self.board[new_coords[0]][new_coords[1]] > 0)
+
+        if p1_piece_should_be_king or p2_piece_should_be_king:
+            self.board[new_coords[0]][new_coords[1]] *= -1
 
     def check_for_winner(self):
-        flattened_board = self.flatten(copy.deepcopy(self.board))
-        remainding_players = []
-        remainding_player_instances = {1: 0, 2: 0}
+        
+        flattened_board = [piece for row in self.board for piece in row]
+        all_pieces = [abs(piece) for piece in flattened_board if piece != 0]
 
-        for entry in flattened_board:
-            if entry != 0 and abs(entry) not in remainding_player_instances:
-                remainding_players.append(abs(entry))
-                remainding_player_instances[abs(entry)] += 1
+        p1_count = all_pieces.count(1)
+        p2_count = all_pieces.count(2)
 
-        if len(remainding_players) == 1:
-            return remainding_players[0]
+        if p1_count == 0: return 2
+        if p2_count == 0: return 1
+        if p1_count == 1 and p2_count == 1: return 'Tie'
 
-        if remainding_player_instances[1] == 1 and remainding_player_instances[2] == 1:
-            return "Tie"
+        return None
 
-        if self.round > 100 and self.winner == None:
-            return "Tie"
+    def translate(self, coord1, coord2):
+        return [coord1[0] + coord2[0], coord1[1] + coord2[1]]
+
+    def find_translation(self, coord1, coord2):
+        return [coord1[0] - coord2[0], coord1[1] - coord2[1]]
+
+    def lists_are_equal(self, list1, list2):
+        if len(list1) != len(list2): return False
+        for i in range(len(list1)):
+            if list1[i] != list2[i]: return False
+        return True
+
+    def nested_list_in_list(self, parent_list, nested_list):
+        for l in parent_list:
+            if all(x == y for x, y in zip(l, nested_list)):
+                return True
+        return False
 
     def log_board(self):
         self.logs.write("-" * 25 + "\n")
