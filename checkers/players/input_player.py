@@ -13,6 +13,8 @@ class InputPlayer:
         self.player_num = n
 
     def choose_move(self, board, choices):
-        print(choices)
+        for choice in choices:
+            print(f"Piece: {choice[0]}, Total translation: {choice[1]}, Captured pieces: {choice[2]}")
+
         chosen_choice = input("Type index of choice \n")
         return choices[int(chosen_choice)]

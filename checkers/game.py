@@ -18,31 +18,46 @@ class Checkers:
         self.players[1].set_player_number(2)
 
     def run_to_completion(self):
-
         while self.winner == None:
             self.logs.write(f"Beginning round {self.round} \n")
+            self.complete_round()
+            self.logs.write(f"Ending round {self.round} \n\n")
+            self.round += 1
 
-            for player in self.players:
-
+    def complete_round(self):
+        for player in self.players:
                 possible_moves = self.get_possible_moves(player)
 
                 if possible_moves == []:
                     self.winner = 3 - player.player_num
                     break
 
-                move = player.choose_move(self.board, possible_moves)
-                if move == None: move = random.choice(possible_moves)
+                chosen_move = player.choose_move(self.board, possible_moves)
 
-                self.update_board(player, move)
-                
+                if chosen_move not in possible_moves:
+                    chosen_move = random.choice(possible_moves)
+
+                self.update_board(player, chosen_move)
                 self.winner = self.check_for_winner()
-                if self.winner: break
 
-                self.logs.write(f"\tPlayer {player.player_num} moved from {move[0]} to {move[0][0] + move[1][0], move[0][1] + move[1][1]} and captured pieces at {move[2]}\n")
+                if self.winner != None:
+                    break
+
+                self.logs.write(f"\tPlayer {player.player_num} moved from {chosen_move[0]} to {chosen_move[0][0] + chosen_move[1][0], chosen_move[0][1] + chosen_move[1][1]} and captured pieces at {chosen_move[2]}\n")
                 self.log_board()
 
-            self.logs.write(f"Ending round {self.round} \n\n")
-            self.round += 1
+    def translate(self, coord1, coord2):
+        return (coord1[0] + coord2[0], coord1[1] + coord2[1])
+
+    def find_translation(self, coord1, coord2):
+        return (coord1[0] - coord2[0], coord1[1] - coord2[1])
+
+    def nested_list_in_list(self, parent_list, nested_list):
+        for l in parent_list:
+            if all(x == y for x, y in zip(l, nested_list)):
+                return True
+
+        return False
 
     def get_possible_moves(self, player, board=None):
         
@@ -106,15 +121,11 @@ class Checkers:
 
                                 next_next_coords = self.translate(current_coords, new_translation)
                                 moves_to_check = self.add_moves_to_check(current_piece, next_next_coords, new_captured_coords, moves_to_check)
-
                                 # then, it'll loop back to the start of moves_to_check
-        
         return possible_moves
 
     def add_moves_to_check(self, current_piece, current_coords, captured_coords, moves_to_check):
-        
         direction = 1 - 2*(current_piece % 2)
-
         moves_to_check.append([current_coords, [direction, -1], captured_coords])
         moves_to_check.append([current_coords, [direction, 1], captured_coords])
 
@@ -125,7 +136,6 @@ class Checkers:
         return moves_to_check
 
     def update_board(self, player, move):
-
         current_coords, translation, captured_coords = move
         new_coords = self.translate(current_coords, translation)
 
@@ -144,7 +154,6 @@ class Checkers:
             self.board[new_coords[0]][new_coords[1]] *= -1
 
     def check_for_winner(self):
-        
         flattened_board = [piece for row in self.board for piece in row]
         all_pieces = [abs(piece) for piece in flattened_board if piece != 0]
 
@@ -156,24 +165,6 @@ class Checkers:
         if p1_count == 1 and p2_count == 1: return 'Tie'
 
         return None
-
-    def translate(self, coord1, coord2):
-        return [coord1[0] + coord2[0], coord1[1] + coord2[1]]
-
-    def find_translation(self, coord1, coord2):
-        return [coord1[0] - coord2[0], coord1[1] - coord2[1]]
-
-    def lists_are_equal(self, list1, list2):
-        if len(list1) != len(list2): return False
-        for i in range(len(list1)):
-            if list1[i] != list2[i]: return False
-        return True
-
-    def nested_list_in_list(self, parent_list, nested_list):
-        for l in parent_list:
-            if all(x == y for x, y in zip(l, nested_list)):
-                return True
-        return False
 
     def log_board(self):
         self.logs.write("-" * 25 + "\n")

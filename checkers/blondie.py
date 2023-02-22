@@ -230,7 +230,7 @@ def evaluation(neural_nets):
     payoff_data = {}
 
     for neural_net in neural_nets:
-        comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 3) #change last number to change number compared to
+        comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 5) #change last number to change number compared to
         payoff_data[neural_net] = 0
 
         for net in comparing_nets:

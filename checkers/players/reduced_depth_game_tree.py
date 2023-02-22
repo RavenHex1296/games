@@ -41,7 +41,6 @@ class Node():
         return flattened_board
 
     def check_for_winner(self):
-        
         flattened_board = [piece for row in self.state for piece in row]
         all_pieces = [abs(piece) for piece in flattened_board if piece != 0]
 
