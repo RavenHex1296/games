@@ -253,22 +253,32 @@ def select_parents(payoff_data):
 
 
 def find_average_payoff(neural_nets, return_net=False):
-    payoff_values = []
+    payoff_values = {}
+
+    for neural_net in neural_nets:
+        payoff_values[neural_net] = 0
 
     for neural_net in neural_nets:
         game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])
         game.run_to_completion()
 
         if game.winner == 1:
-            payoff_values.append(1)
+            payoff_values[neural_net] = 1
 
         if game.winner == 2:
-            payoff_values.append(-2)
+            payoff_values[neural_net] = -2
 
         if game.winner == "Tie":
-            payoff_values.append(0)
+            payoff_values[neural_net] = 0
+
 
     if return_net == True:
+        max_total_payoff_net = neural_nets[0]
+
+        for neural_net in payoff_values:
+            if payoff_values[max_total_payoff_net] < payoff_values[neural_net]:
+                max_total_payoff_net = neural_net
+
         to_print_data = copy.deepcopy(max_total_payoff_net.__dict__)
         to_print_data['nodes'] = [node.node_num for node in flatten(to_print_data['nodes'])]
         file_object.write(f'{max_total_payoff_net.__dict__} \n')
@@ -288,7 +298,7 @@ def run(num_first_gen, num_gen):
     #print("Evaluation for Gen 0 Done")
     next_gen_parents = select_parents(evaluation_data)
     #print("Parents from Gen 0 have been selected")
-    average_payoff_values[0] = find_average_payoff(next_gen_parents) #is this supposed to just do parents or entire new gen?
+    average_payoff_values[0] = find_average_payoff(next_gen_parents)
     #print("Got Average Total Payoff Value for Gen 0")
     current_gen = make_new_gen_v2(next_gen_parents)
     file_object.write(f'0: {average_payoff_values[0]} \n')

@@ -100,7 +100,7 @@ class Checkers:
                         # check if the opponent is in the new spot
 
                         elif abs(new_piece) == 3 - player.player_num:
-                            
+
                             # if so, and if the next next spot is empty, add that spot to moves_to_check
 
                             next_translation = [2*t for t in translation_to_check]
