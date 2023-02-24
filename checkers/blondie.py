@@ -230,7 +230,7 @@ def evaluation(neural_nets):
     payoff_data = {}
 
     for neural_net in neural_nets:
-        comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 5) #change last number to change number compared to
+        comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 3) #change last number to change number compared to
         payoff_data[neural_net] = 0
 
         for net in comparing_nets:
@@ -299,7 +299,7 @@ def run(num_first_gen, num_gen):
         #print(f"Evaluation for Gen {n} Done")
         #testing next_gen_parents = select_parents(second_evaluation_data)
         next_gen_parents = select_parents(evaluation_data)
-        print(f"Parents from Gen {n} have been selected")            
+        #print(f"Parents from Gen {n} have been selected")
 
         #if n == num_gen - 1:
         #    return_net = True
@@ -315,7 +315,7 @@ def run(num_first_gen, num_gen):
 
 total_values = {}
 first_gen_size = 10
-num_generations = 10
+num_generations = 50
 num_trials = 1
 
 #logs.write(f'HYPERPARAMETERS \n\t Networks in first generation: {first_gen_size} \n\t Selection percentage: 0.5')

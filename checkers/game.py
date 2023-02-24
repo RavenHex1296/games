@@ -32,7 +32,7 @@ class Checkers:
                     self.winner = 3 - player.player_num
                     break
 
-                chosen_move = player.choose_move(self.board, possible_moves)
+                chosen_move = player.choose_move(copy.deepcopy(self.board), possible_moves)
 
                 if chosen_move not in possible_moves:
                     chosen_move = random.choice(possible_moves)

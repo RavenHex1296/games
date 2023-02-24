@@ -112,16 +112,6 @@ class ReducedSearchGameTree():
         self.ply = ply
         self.neural_net = neural_net
 
-    def get_valid_translations(self, coord, board):
-        if board[coord[0]][coord[1]] == 1:
-            return [(-1, 1), (-1, -1)]
-
-        if board[coord[0]][coord[1]] == -1 or board[coord[0]][coord[1]] == -2:
-            return [(-1, 1), (-1, -1), (1, 1), (1, -1)]
-
-        if board[coord[0]][coord[1]] == 2:
-            return [(1, -1), (1, 1)]
-
     def add_moves_to_check(self, current_piece, current_coords, captured_coords, moves_to_check):
         
         direction = 1 - 2*(current_piece % 2)
@@ -132,13 +122,14 @@ class ReducedSearchGameTree():
         if current_piece < 0:
             moves_to_check.append([current_coords, [-direction, -1], captured_coords])
             moves_to_check.append([current_coords, [-direction, 1], captured_coords])
-        
+
         return moves_to_check
 
     def nested_list_in_list(self, parent_list, nested_list):
         for l in parent_list:
             if all(x == y for x, y in zip(l, nested_list)):
                 return True
+
         return False
 
     def get_possible_moves(self, player_num, board):
