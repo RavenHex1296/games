@@ -286,7 +286,7 @@ def find_average_payoff(neural_nets, return_net=False):
             print_nodes[layer] = [node.node_num for node in to_print_data['nodes'][layer]] #this isnt working fsr
 
         to_print_data['nodes'] = print_nodes
-        file_object.write(f'{max_total_payoff_net.__dict__} \n')
+        file_object.write(f'{to_print_data} \n')
 
     return sum([value for value in list(payoff_values.values())]) / len([value for value in list(payoff_values.values())])
 
@@ -331,7 +331,7 @@ def run(num_first_gen, num_gen):
 
 total_values = {}
 first_gen_size = 10
-num_generations = 2
+num_generations = 50
 num_trials = 1
 
 
