@@ -288,7 +288,7 @@ def run(num_first_gen, num_gen):
     #print("Evaluation for Gen 0 Done")
     next_gen_parents = select_parents(evaluation_data)
     #print("Parents from Gen 0 have been selected")
-    average_payoff_values[0] = find_average_payoff(next_gen_parents)
+    average_payoff_values[0] = find_average_payoff(next_gen_parents) #is this supposed to just do parents or entire new gen?
     #print("Got Average Total Payoff Value for Gen 0")
     current_gen = make_new_gen_v2(next_gen_parents)
     file_object.write(f'0: {average_payoff_values[0]} \n')
@@ -309,7 +309,7 @@ def run(num_first_gen, num_gen):
         #max_payoff_values[n] = find_max_payoff(evaluation_data, return_net)
         average_payoff_values[n] = find_average_payoff(next_gen_parents, return_net)
         file_object.write(f'{n}: {average_payoff_values[n]} \n')
-        print(f"Got Average Total Payoff Value for Gen {n}")
+        #print(f"Got Average Total Payoff Value for Gen {n}")
         current_gen = make_new_gen_v2(next_gen_parents)
         print(f"Gen {n} took {time.time() - start_time} seconds to complete")
 
