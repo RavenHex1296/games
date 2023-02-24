@@ -1,7 +1,7 @@
 import random
 import math
 import sys
-sys.path.append('tic_tac_toe')
+sys.path.append('checkers/players')
 from reduced_depth_game_tree import *
 
 class NNPlayer:

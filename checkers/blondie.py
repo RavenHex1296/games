@@ -280,10 +280,15 @@ def find_average_payoff(neural_nets, return_net=False):
                 max_total_payoff_net = neural_net
 
         to_print_data = copy.deepcopy(max_total_payoff_net.__dict__)
-        to_print_data['nodes'] = [node.node_num for node in flatten(to_print_data['nodes'])]
+        print_nodes = {}
+
+        for layer in to_print_data['nodes']:
+            print_nodes[layer] = [node.node_num for node in to_print_data['nodes'][layer]] #this isnt working fsr
+
+        to_print_data['nodes'] = print_nodes
         file_object.write(f'{max_total_payoff_net.__dict__} \n')
 
-    return sum(payoff_values) / len(payoff_values)
+    return sum([value for value in list(payoff_values.values())]) / len([value for value in list(payoff_values.values())])
 
 
 file_object = open('blondie.txt', 'a')
@@ -301,7 +306,6 @@ def run(num_first_gen, num_gen):
     average_payoff_values[0] = find_average_payoff(next_gen_parents)
     #print("Got Average Total Payoff Value for Gen 0")
     current_gen = make_new_gen_v2(next_gen_parents)
-    file_object.write(f'0: {average_payoff_values[0]} \n')
     print(f"Gen 0 took {time.time() - start_time} seconds to complete")
 
 
@@ -318,7 +322,6 @@ def run(num_first_gen, num_gen):
 
         #max_payoff_values[n] = find_max_payoff(evaluation_data, return_net)
         average_payoff_values[n] = find_average_payoff(next_gen_parents, return_net)
-        file_object.write(f'{n}: {average_payoff_values[n]} \n')
         #print(f"Got Average Total Payoff Value for Gen {n}")
         current_gen = make_new_gen_v2(next_gen_parents)
         print(f"Gen {n} took {time.time() - start_time} seconds to complete")
@@ -328,15 +331,13 @@ def run(num_first_gen, num_gen):
 
 total_values = {}
 first_gen_size = 10
-num_generations = 50
+num_generations = 2
 num_trials = 1
 
-#logs.write(f'HYPERPARAMETERS \n\t Networks in first generation: {first_gen_size} \n\t Selection percentage: 0.5')
 
 for n in range(0, num_generations):
     total_values[n] = 0
 
-#run(first_gen_size, num_generations)
 
 for n in range(0, num_trials):
     start_time = time.time()
