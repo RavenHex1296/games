@@ -91,7 +91,6 @@ class EvolvedNeuralNet:
                 return node
 
 
-
 def flatten(input_dict):
     flattened_dict = []
 
@@ -113,23 +112,6 @@ def get_weight_ids(nodes_by_layer, bias_node_nums):
                         weight_ids.append(f'{node.node_num},{next_layer_node.node_num}')
 
     return weight_ids
-
-
-def get_nodes_excluded_from_removal(nodes, bias_node_nums):
-    nodes_exempt = []
-
-    for node in nodes:
-        if node.node_num in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
-            nodes_exempt.append(node)
-
-        elif node.node_num in [node.node_num for node in nodes if len(node.children) == 0]:
-            nodes_exempt.append(node)
-
-        elif node.node_num in bias_node_nums:
-            nodes_exempt.append(node)
-
-    return nodes_exempt
-
 
 
 def make_new_gen_v2(parents):
@@ -163,23 +145,6 @@ def run_game(players):
     game = TicTacToe(players)
     game.run_to_completion()
 
-
-def convert_to_nodes_by_layer(nodes): #special to first gen only
-    nodes_by_layer = {1: [], 2: [], 3: []}
-
-    for n in range(0, len(nodes)):
-        node = nodes[n]
-
-        if n <= 9:
-            nodes_by_layer[1].append(node)
-
-        elif node in nodes[-9:]:
-            nodes_by_layer[3].append(node)
-
-        else:
-            nodes_by_layer[2].append(node)
-
-    return nodes_by_layer
 
 def make_first_gen(population_size):
     first_gen = []

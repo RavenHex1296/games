@@ -19,6 +19,9 @@ class Checkers:
 
     def run_to_completion(self):
         while self.winner == None:
+            if self.round > 100:
+                self.winner = "Tie"
+
             self.logs.write(f"Beginning round {self.round} \n")
             self.complete_round()
             self.logs.write(f"Ending round {self.round} \n\n")
