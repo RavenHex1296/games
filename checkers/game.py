@@ -147,7 +147,7 @@ class Checkers:
 
         for coords in captured_coords:
             self.board[coords[0]][coords[1]] = 0 # set captured coords to 0
-        
+
         # turn pieces into kings
 
         p1_piece_should_be_king = (player.player_num == 1 and new_coords[0] == 0 and self.board[new_coords[0]][new_coords[1]] > 0)
