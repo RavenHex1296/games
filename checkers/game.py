@@ -1,6 +1,7 @@
 import random
 from logger import *
 import copy
+import time
 
 class Checkers:
     def __init__(self, players):
@@ -21,6 +22,7 @@ class Checkers:
         while self.winner == None:
             if self.round > 100:
                 self.winner = "Tie"
+                break
 
             self.logs.write(f"Beginning round {self.round} \n")
             self.complete_round()
@@ -29,25 +31,24 @@ class Checkers:
 
     def complete_round(self):
         for player in self.players:
-                possible_moves = self.get_possible_moves(player)
+            possible_moves = self.get_possible_moves(player)
 
-                if possible_moves == []:
-                    self.winner = 3 - player.player_num
-                    break
+            if possible_moves == []:
+                self.winner = 3 - player.player_num
+                break
+            chosen_move = player.choose_move(copy.deepcopy(self.board), possible_moves)
 
-                chosen_move = player.choose_move(copy.deepcopy(self.board), possible_moves)
-
-                if chosen_move not in possible_moves:
+            if chosen_move not in possible_moves:
                     chosen_move = random.choice(possible_moves)
 
-                self.update_board(player, chosen_move)
-                self.winner = self.check_for_winner()
+            self.update_board(player, chosen_move)
+            self.winner = self.check_for_winner()
 
-                if self.winner != None:
-                    break
+            if self.winner != None:
+                break
 
-                self.logs.write(f"\tPlayer {player.player_num} moved from {chosen_move[0]} to {chosen_move[0][0] + chosen_move[1][0], chosen_move[0][1] + chosen_move[1][1]} and captured pieces at {chosen_move[2]}\n")
-                self.log_board()
+            self.logs.write(f"\tPlayer {player.player_num} moved from {chosen_move[0]} to {chosen_move[0][0] + chosen_move[1][0], chosen_move[0][1] + chosen_move[1][1]} and captured pieces at {chosen_move[2]}\n")
+            self.log_board()
 
     def translate(self, coord1, coord2):
         return (coord1[0] + coord2[0], coord1[1] + coord2[1])
@@ -63,7 +64,6 @@ class Checkers:
         return False
 
     def get_possible_moves(self, player, board=None):
-        
         if board == None: board = self.board
 
         possible_moves = []
