@@ -15,7 +15,7 @@ from kill_player import *
 from input_player import *
 
 
-logs = Logger('/workspace/games/fogel.txt')
+file_object = open('blondie.txt', 'a')
 
 def activation_function(x):
     if x > 100:
@@ -199,7 +199,7 @@ def evaluation(neural_nets):
         payoff_data[neural_net] = 0
 
         #for net in comparing_nets:
-        for _ in range(3):
+        for _ in range(5):
             game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])#Checkers([NNPlayer(2, neural_net), NNPlayer(2, net)])
             game.run_to_completion()
 
@@ -254,10 +254,11 @@ def find_average_payoff(neural_nets, return_net=False):
         to_print_data['nodes'] = print_nodes
         file_object.write(f'{to_print_data} \n')
 
-    return sum([value for value in list(payoff_values.values())]) / len([value for value in list(payoff_values.values())])
+    avg_gen_payoff = sum([value for value in list(payoff_values.values())]) / len([value for value in list(payoff_values.values())])
+    file_object.write(f"{payoff_values.values()} \n")
+    print(payoff_values.values())
+    return avg_gen_payoff
 
-
-file_object = open('blondie.txt', 'a')
 
 
 def run(num_first_gen, num_gen):
@@ -296,7 +297,7 @@ def run(num_first_gen, num_gen):
 
 
 total_values = {}
-first_gen_size = 10
+first_gen_size = 20
 num_generations = 50
 num_trials = 1
 
