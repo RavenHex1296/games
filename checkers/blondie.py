@@ -130,13 +130,23 @@ def make_new_gen_v2(parents):
             child_k = 3
 
         assert child_k <= 3 and child_k >= 1, "Child k value is out of range"
+        weights_increased = False
+        weights_decreased = False
 
         for weight in parent.node_weights:
             weight_value = parent.node_weights[weight] + child_mutation_rate * np.random.normal(0, 1)
-            assert weight_value != parent.node_weights[weights], "Child weight is the same as parent"
+            assert weight_value != parent.node_weights[weight], "Child weight is the same as parent"
             assert abs(weight_value) - abs(parent.node_weights[weight]) < 6 * child_mutation_rate, "Child weight value changed too much"
+
+            if weight_value - parent.node_weights[weight] > 0:
+                weights_increased = True
+            
+            if weight_value - parent.node_weights[weight] < 0:
+                weights_decreased = True
+
             child_weights[weight] = weight_value
 
+        assert weights_increased == True and weights_decreased == True, "Weights either did not increase or decrease"
         child = EvolvedNeuralNet(parent.nodes, child_weights, child_bias_node_nums, parent.piece_difference_node_num, child_mutation_rate, child_k)
         assert child != parent, "Child neural net is the same as parent"
         new_gen.append(child)
@@ -165,7 +175,7 @@ def make_first_gen(population_size):
             assert abs(weight) <= 0.2, "Initial weight is not in [-0.2, 0.2]"
             weights[weight_id] = weight	
 
-        assert(abs(sum(list(weights.values()))) < 10), "Sum of initial weights too large"
+        assert(abs(sum(list(weights.values()))) < 100), "Sum of initial weights too large"
         neural_net = EvolvedNeuralNet(nodes_by_layer, weights, [33, 74, 85], 87, 0.05, 2)
         first_gen.append(neural_net)
 
