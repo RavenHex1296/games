@@ -129,9 +129,12 @@ def make_new_gen_v2(parents):
         if child_k > 3:
             child_k = 3
 
+        assert child_k <= 3 and child_k >= 1, "Child k value is out of range"
+
         for weight in parent.node_weights:
             weight_value = parent.node_weights[weight] + child_mutation_rate * np.random.normal(0, 1)
-            #assert abs(weight_value) - abs(parent.node_weights[weight]) < 0.3, "Child weight value changed too much"
+            assert weight_value != parent.node_weights[weights], "Child weight is the same as parent"
+            assert abs(weight_value) - abs(parent.node_weights[weight]) < 6 * child_mutation_rate, "Child weight value changed too much"
             child_weights[weight] = weight_value
 
         child = EvolvedNeuralNet(parent.nodes, child_weights, child_bias_node_nums, parent.piece_difference_node_num, child_mutation_rate, child_k)
@@ -159,9 +162,10 @@ def make_first_gen(population_size):
 
         for weight_id in weight_ids:
             weight = random.uniform(-0.2, 0.2)
-            assert abs(weight) <= 0.2
+            assert abs(weight) <= 0.2, "Initial weight is not in [-0.2, 0.2]"
             weights[weight_id] = weight	
 
+        assert(abs(sum(list(weights.values()))) < 10), "Sum of initial weights too large"
         neural_net = EvolvedNeuralNet(nodes_by_layer, weights, [33, 74, 85], 87, 0.05, 2)
         first_gen.append(neural_net)
 
@@ -199,8 +203,8 @@ def evaluation(neural_nets):
         payoff_data[neural_net] = 0
 
         #for net in comparing_nets:
-        for _ in range(5):
-            game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])#Checkers([NNPlayer(2, neural_net), NNPlayer(2, net)])
+        for _ in range(3):
+            game = Checkers([NNPlayer(3, neural_net), RandomPlayer()])#Checkers([NNPlayer(2, neural_net), NNPlayer(2, net)])
             game.run_to_completion()
 
             if game.winner == 1:
@@ -225,7 +229,7 @@ def find_average_payoff(neural_nets, return_net=False):
         payoff_values[neural_net] = 0
 
     for neural_net in neural_nets:
-        game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])
+        game = Checkers([NNPlayer(3, neural_net), RandomPlayer()])
         game.run_to_completion()
 
         if game.winner == 1:
@@ -297,7 +301,7 @@ def run(num_first_gen, num_gen):
 
 
 total_values = {}
-first_gen_size = 20
+first_gen_size = 10
 num_generations = 50
 num_trials = 1
 

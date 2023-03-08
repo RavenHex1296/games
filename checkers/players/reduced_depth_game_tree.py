@@ -77,6 +77,9 @@ class Node():
 
         for i in range(0, len(board)):
             for j in range(0, len(board[i])):
+                piece = board[i][j]
+                assert abs(piece) <= 3, "Board values too large"
+
                 if i % 2 == 0:
                     if j % 2 == 1:
                         reduced_board.append(board[i][j])
