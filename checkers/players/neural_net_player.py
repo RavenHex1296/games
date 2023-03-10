@@ -55,12 +55,10 @@ class NNPlayer:
                 max_value = child.value
 
         optimal_choices = []
-        #num choices < num children sometimes fsr?
+
         for choice in choices:
             new_board = self.translate(choice, copy.deepcopy(board))
             board_value = self.game_tree.nodes_dict[str(new_board)].value
-            #if self.game_tree.nodes_dict[str(new_board)] not in current_node.children:
-                #print(new_board)
 
             if board_value == max_value:
                 optimal_choices.append(choice)

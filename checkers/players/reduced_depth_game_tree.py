@@ -34,7 +34,7 @@ class Node():
 
     def flatten(self, board):
         flattened_board = []
-        
+
         for row in board:
             flattened_board += row
 
@@ -43,7 +43,6 @@ class Node():
     def check_for_winner(self):
         flattened_board = [piece for row in self.state for piece in row]
         all_pieces = [abs(piece) for piece in flattened_board if piece != 0]
-
         p1_count = all_pieces.count(1)
         p2_count = all_pieces.count(2)
 
@@ -56,19 +55,19 @@ class Node():
     def convert_board(self, neural_net):
         converted_board = copy.deepcopy(self.state)
 
-        for row in converted_board:
-            for column in row:
-                if column == self.player_num:
-                    column = 1
+        for i in range(0, len(converted_board)):
+            for j in range(0, len(converted_board[i])):
+                if self.state[i][j] == self.player_num:
+                    converted_board[i][j] = 1
 
-                if column == 3 - self.player_num:
-                    column = -1
+                if self.state[i][j] == 3 - self.player_num:
+                    converted_board[i][j] = -1
 
-                if column == -self.player_num:
-                    column = neural_net.k_value
+                if self.state[i][j] == -self.player_num:
+                    converted_board[i][j] = neural_net.k_value
 
-                if column == - (3 - self.player_num):
-                    column = -neural_net.k_value
+                if self.state[i][j] == - (3 - self.player_num):
+                    converted_board[i][j] = -neural_net.k_value
 
         return converted_board
 
@@ -101,6 +100,7 @@ class Node():
         else:
             converted_board = self.convert_board(neural_net)
             reduced_board = self.reduce_board(converted_board)
+            assert len(reduced_board) == 32, "Reduced board given to heurstic isn't correct size"
             neural_net.build_neural_net(reduced_board)
             return neural_net.get_node(86).node_output
 
@@ -229,7 +229,7 @@ class ReducedSearchGameTree():
             new_state = self.update_board(move, copy.deepcopy(node.state))
 
             if str(new_state) in list(self.nodes_dict.keys()):
-                #possibly its possible to have both players have that state
+                #its possible to have both players have that state
                 children.append(self.nodes_dict[str(new_state)])
                 self.nodes_dict[str(new_state)].previous.append(node)
                 continue
@@ -244,19 +244,15 @@ class ReducedSearchGameTree():
     def set_node_values(self, nodes_by_layer, neural_net):
         for layer in list(nodes_by_layer.keys())[::-1]:
             for node in nodes_by_layer[layer]:
-                if layer == list(nodes_by_layer.keys())[-1]:
+                if node.children == None or len(node.children) == 0:
                     node.value = node.heuristic_evaluation(neural_net)
 
                 else:
-                    if node.children == None or len(node.children) == 0:
-                        node.value = node.heuristic_evaluation(neural_net)
+                    if node.turn == node.player_num:
+                        node.value = max([child.value for child in node.children])
 
-                    else:
-                        if node.turn == node.player_num:
-                            node.value = max([child.value for child in node.children])
-
-                        elif node.turn == 3 - node.player_num:
-                            node.value = min([child.value for child in node.children])
+                    elif node.turn == 3 - node.player_num:
+                        node.value = min([child.value for child in node.children])
 
     def reset_node_values(self):
         for node in list(self.nodes_dict.values()):

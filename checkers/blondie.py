@@ -14,7 +14,8 @@ from neural_net_player import *
 from kill_player import *
 from input_player import *
 
-
+logs = Logger('/workspace/games/checkers/blondie_logs.txt')
+logs.clear_log()
 file_object = open('blondie.txt', 'a')
 
 def activation_function(x):
@@ -22,9 +23,9 @@ def activation_function(x):
         return 1
 
     if x < -100:
-        return 0
+        return -1
 
-    return 1 / (1 + math.exp(-x))
+    return (math.exp(x) - math.exp(-x)) / (math.exp(x) + math.exp(-x))
 
 
 class Node:
@@ -214,7 +215,7 @@ def evaluation(neural_nets):
 
         #for net in comparing_nets:
         for _ in range(3):
-            game = Checkers([NNPlayer(3, neural_net), RandomPlayer()])#Checkers([NNPlayer(2, neural_net), NNPlayer(2, net)])
+            game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])#Checkers([NNPlayer(2, neural_net), NNPlayer(2, net)])
             game.run_to_completion()
 
             if game.winner == 1:
@@ -239,7 +240,7 @@ def find_average_payoff(neural_nets, return_net=False):
         payoff_values[neural_net] = 0
 
     for neural_net in neural_nets:
-        game = Checkers([NNPlayer(3, neural_net), RandomPlayer()])
+        game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])
         game.run_to_completion()
 
         if game.winner == 1:
@@ -272,7 +273,6 @@ def find_average_payoff(neural_nets, return_net=False):
     file_object.write(f"{payoff_values.values()} \n")
     print(payoff_values.values())
     return avg_gen_payoff
-
 
 
 def run(num_first_gen, num_gen):
@@ -312,7 +312,7 @@ def run(num_first_gen, num_gen):
 
 total_values = {}
 first_gen_size = 10
-num_generations = 50
+num_generations = 10
 num_trials = 1
 
 

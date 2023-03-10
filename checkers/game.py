@@ -36,6 +36,7 @@ class Checkers:
             if possible_moves == []:
                 self.winner = 3 - player.player_num
                 break
+
             chosen_move = player.choose_move(copy.deepcopy(self.board), possible_moves)
 
             if chosen_move not in possible_moves:
