@@ -72,7 +72,7 @@ class EvolvedNeuralNet:
                 node.node_output = input_array[n]
 
         piece_difference_node = self.get_node(self.piece_difference_node_num)
-        piece_difference_node.node_output = sum([node.node_output for node in self.nodes[1] if node.node_num != piece_difference_node])
+        piece_difference_node.node_output = sum([node.node_output for node in self.nodes[1] if node.node_num != piece_difference_node and node.node_num not in self.bias_nodes])
 
         for node in self.nodes[2] + self.nodes[3] + self.nodes[4]:
             if node.node_num in self.bias_nodes:
