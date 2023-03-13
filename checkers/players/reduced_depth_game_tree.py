@@ -55,8 +55,8 @@ class Node():
     def convert_board(self, neural_net):
         converted_board = copy.deepcopy(self.state)
 
-        for i in range(0, len(converted_board)):
-            for j in range(0, len(converted_board[i])):
+        for i in range(0, len(self.state)):
+            for j in range(0, len(self.state[i])):
                 if self.state[i][j] == self.player_num:
                     converted_board[i][j] = 1
 
