@@ -9,4 +9,4 @@ class RandomPlayer:
         self.player_num = n
 
     def choose_move(self, board, choices):
-        return choices[0]#random.choice(choices)
+        return random.choice(choices)

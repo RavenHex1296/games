@@ -214,12 +214,11 @@ def evaluation(neural_nets):
     payoff_data = {}
 
     for neural_net in neural_nets:
-        #comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 3) #change last number to change number compared to
+        comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 3) #change last number to change number compared to
         payoff_data[neural_net] = 0
 
-        #for net in comparing_nets:
-        for _ in range(3):
-            game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])#Checkers([NNPlayer(2, neural_net), NNPlayer(2, net)])
+        for net in comparing_nets:
+            game = Checkers([NNPlayer(2, neural_net), NNPlayer(2, net)])
             game.run_to_completion()
 
             if game.winner == 1:
@@ -244,7 +243,7 @@ def find_average_payoff(neural_nets, return_net=False):
         payoff_values[neural_net] = 0
 
     for neural_net in neural_nets:
-        game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])
+        game = Checkers([NNPlayer(2, neural_net), KillPlayer()])
         game.run_to_completion()
 
         if game.winner == 1:
