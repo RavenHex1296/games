@@ -10,7 +10,7 @@ class KillPlayer:
 
     def choose_move(self, board, choices):
         for choice in choices:
-            if len(choices[2]) > 0:
+            if len(choice[2]) > 0:
                 return choice
 
         return random.choice(choices)

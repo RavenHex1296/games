@@ -14,8 +14,7 @@ from neural_net_player import *
 from kill_player import *
 from input_player import *
 
-logs = Logger('/workspace/games/checkers/blondie_logs.txt')
-logs.clear_log()
+
 file_object = open('blondie.txt', 'a')
 
 def activation_function(x):
@@ -243,7 +242,7 @@ def find_average_payoff(neural_nets, return_net=False):
         payoff_values[neural_net] = 0
 
     for neural_net in neural_nets:
-        game = Checkers([NNPlayer(2, neural_net), KillPlayer()])
+        game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])
         game.run_to_completion()
 
         if game.winner == 1:
