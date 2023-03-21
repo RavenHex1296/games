@@ -211,6 +211,7 @@ def get_subset(choices, excluded_net, max_elements):
 
 def evaluation(neural_nets):
     payoff_data = {}
+    num_rounds_data = []
 
     for neural_net in neural_nets:
         comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 3) #change last number to change number compared to
@@ -225,6 +226,11 @@ def evaluation(neural_nets):
 
             elif game.winner == 2:
                 payoff_data[neural_net] -= 2
+
+            num_rounds_data.append(game.round)
+
+    file_object.write(f"avg number of rounds {sum(num_rounds_data) / len(num_rounds_data)} \n")
+    print(f"avg number of rounds {sum(num_rounds_data) / len(num_rounds_data)}")
 
     return payoff_data
 
@@ -242,7 +248,7 @@ def find_average_payoff(neural_nets, return_net=False):
         payoff_values[neural_net] = 0
 
     for neural_net in neural_nets:
-        game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])
+        game = Checkers([NNPlayer(2, neural_net), KillPlayer()])
         game.run_to_completion()
 
         if game.winner == 1:
@@ -340,4 +346,4 @@ plt.plot(x_values, y_values)
 plt.xlabel('num generations')
 plt.ylabel('average total payoff')
 plt.legend(loc="best")
-plt.savefig('blondiev2.png')
+plt.savefig('blondiev3.png')
