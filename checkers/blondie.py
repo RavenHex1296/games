@@ -214,11 +214,12 @@ def evaluation(neural_nets):
     num_rounds_data = []
 
     for neural_net in neural_nets:
-        comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 3) #change last number to change number compared to
+        #comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 3) #change last number to change number compared to
         payoff_data[neural_net] = 0
 
-        for net in comparing_nets:
-            game = Checkers([NNPlayer(2, neural_net), NNPlayer(2, net)])
+        for _ in range(3): 
+        #for net in comparing_nets:
+            game = Checkers([NNPlayer(2, neural_net), KillPlayer()])
             game.run_to_completion()
 
             if game.winner == 1:
@@ -248,7 +249,7 @@ def find_average_payoff(neural_nets, return_net=False):
         payoff_values[neural_net] = 0
 
     for neural_net in neural_nets:
-        game = Checkers([NNPlayer(2, neural_net), KillPlayer()])
+        game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])
         game.run_to_completion()
 
         if game.winner == 1:
@@ -297,7 +298,7 @@ def run(num_first_gen, num_gen):
     current_gen = make_new_gen_v2(next_gen_parents)
     print(f"Gen 0 took {time.time() - start_time} seconds to complete")
 
-
+ 
     for n in range(1, num_gen):
         start_time = time.time()
         evaluation_data = evaluation(current_gen)
@@ -320,7 +321,7 @@ def run(num_first_gen, num_gen):
 
 total_values = {}
 first_gen_size = 10
-num_generations = 10
+num_generations = 20
 num_trials = 1
 
 
@@ -346,4 +347,4 @@ plt.plot(x_values, y_values)
 plt.xlabel('num generations')
 plt.ylabel('average total payoff')
 plt.legend(loc="best")
-plt.savefig('blondiev3.png')
+plt.savefig('blondie.png')
