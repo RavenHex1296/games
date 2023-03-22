@@ -214,12 +214,11 @@ def evaluation(neural_nets):
     num_rounds_data = []
 
     for neural_net in neural_nets:
-        #comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 3) #change last number to change number compared to
+        comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 5)
         payoff_data[neural_net] = 0
 
-        for _ in range(3): 
-        #for net in comparing_nets:
-            game = Checkers([NNPlayer(2, neural_net), KillPlayer()])
+        for net in comparing_nets:
+            game = Checkers([NNPlayer(2, neural_net), NNPlayer(2, net)])
             game.run_to_completion()
 
             if game.winner == 1:
@@ -249,7 +248,7 @@ def find_average_payoff(neural_nets, return_net=False):
         payoff_values[neural_net] = 0
 
     for neural_net in neural_nets:
-        game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])
+        game = Checkers([NNPlayer(2, neural_net), KillPlayer()])
         game.run_to_completion()
 
         if game.winner == 1:
@@ -320,8 +319,8 @@ def run(num_first_gen, num_gen):
 
 
 total_values = {}
-first_gen_size = 10
-num_generations = 20
+first_gen_size = 30
+num_generations = 100
 num_trials = 1
 
 
@@ -347,4 +346,4 @@ plt.plot(x_values, y_values)
 plt.xlabel('num generations')
 plt.ylabel('average total payoff')
 plt.legend(loc="best")
-plt.savefig('blondie.png')
+plt.savefig('blondie2.png')
