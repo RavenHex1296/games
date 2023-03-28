@@ -72,7 +72,6 @@ class EvolvedNeuralNet:
 
         piece_difference_node = self.get_node(self.piece_difference_node_num)
         piece_difference_node.node_output = sum([node.node_output for node in self.nodes[1] if node.node_num not in [87, 33, 74, 85]])
-        assert abs(piece_difference_node.node_output) < 20
 
         for node in self.nodes[2] + self.nodes[3] + self.nodes[4]:
             if node.node_num in self.bias_nodes:
@@ -219,7 +218,13 @@ def evaluation(neural_nets):
 
         for net in comparing_nets:
             game = Checkers([NNPlayer(2, neural_net), NNPlayer(2, net)])
-            game.run_to_completion()
+
+            try:
+                game.run_to_completion()
+
+            except:
+                game.winner = "Tie"
+                file_object.write("Game vs another net was not run properly \n")
 
             if game.winner == 1:
                 payoff_data[neural_net] += 1
@@ -249,7 +254,13 @@ def find_average_payoff(neural_nets, return_net=False):
 
     for neural_net in neural_nets:
         game = Checkers([NNPlayer(2, neural_net), KillPlayer()])
-        game.run_to_completion()
+
+        try:
+            game.run_to_completion()
+
+        except:
+            game.winner = "Tie"
+            file_object.write("Game vs kill player not run properly \n")
 
         if game.winner == 1:
             payoff_values[neural_net] = 1
@@ -278,7 +289,7 @@ def find_average_payoff(neural_nets, return_net=False):
         file_object.write(f'{to_print_data} \n')
 
     avg_gen_payoff = sum([value for value in list(payoff_values.values())]) / len([value for value in list(payoff_values.values())])
-    file_object.write(f"{payoff_values.values()} \n")
+    file_object.write(f"{payoff_values.values()} {sum([value for value in list(payoff_values.values())]) / len([value for value in list(payoff_values.values())])} \n\n")
     print(payoff_values.values())
     return avg_gen_payoff
 
@@ -346,4 +357,4 @@ plt.plot(x_values, y_values)
 plt.xlabel('num generations')
 plt.ylabel('average total payoff')
 plt.legend(loc="best")
-plt.savefig('blondie2.png')
+plt.savefig('blondiefullscale.png')
