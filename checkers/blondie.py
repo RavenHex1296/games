@@ -289,7 +289,7 @@ def find_average_payoff(neural_nets, return_net=False):
         file_object.write(f'{to_print_data} \n')
 
     avg_gen_payoff = sum([value for value in list(payoff_values.values())]) / len([value for value in list(payoff_values.values())])
-    file_object.write(f"{payoff_values.values()} {sum([value for value in list(payoff_values.values())]) / len([value for value in list(payoff_values.values())])} \n\n")
+    file_object.write(f"{payoff_values.values()} \n {avg_gen_payoff} \n\n")
     print(payoff_values.values())
     return avg_gen_payoff
 
