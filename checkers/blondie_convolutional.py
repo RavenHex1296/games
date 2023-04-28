@@ -17,6 +17,7 @@ from input_player import *
 
 file_object = open('blondie_convolutional.txt', 'a')
 saved_parents = open("saved_parents.txt", "a")
+saved_gen_payoffs = open("saved_gen_payoffs.txt", "a")
 
 def activation_function(x):
     return math.tanh(x)
@@ -283,7 +284,6 @@ def evaluation(neural_nets):
 
     file_object.write(f"avg number of rounds {sum(num_rounds_data) / len(num_rounds_data)} \n")
     print(f"avg number of rounds {sum(num_rounds_data) / len(num_rounds_data)}")
-
     return payoff_data
 
 
@@ -294,8 +294,8 @@ def save_parents(parents):
 
         to_print_data["node_weights"] = parent.node_weights
         to_print_data['mutation_rate'] = parent.mutation_rate
-        to_print_data["k"] = [parent.k]
-        file_object.write(f'{to_print_data} \n')
+        to_print_data["k"] = [parent.k_value]
+        saved_parents.write(f'{to_print_data} \n\n')
 
 
 def select_parents(payoff_data):
@@ -348,11 +348,15 @@ def find_average_payoff(neural_nets, return_net=False):
 
     avg_gen_payoff = sum([value for value in list(payoff_values.values())]) / len([value for value in list(payoff_values.values())])
     file_object.write(f"{payoff_values.values()} \n {avg_gen_payoff} \n\n")
+    saved_gen_payoffs.write(f"{avg_gen_payoff},")
     print(payoff_values.values())
     return avg_gen_payoff
 
 
 def run(num_first_gen, num_gen):
+    with open("saved_parents.txt", 'w') as file:
+        file.writelines([''])
+
     saved_parents.write('Gen 0 \n')
     average_payoff_values = {}
     return_net = False
@@ -368,8 +372,11 @@ def run(num_first_gen, num_gen):
     current_gen = make_new_gen_v2(next_gen_parents)
     print(f"Gen 0 took {time.time() - start_time} seconds to complete")
 
- 
+
     for n in range(1, num_gen):
+        with open("saved_parents.txt", 'w') as file:
+            file.writelines([''])
+
         saved_parents.write(f'Gen {n} \n')
         start_time = time.time()
         evaluation_data = evaluation(current_gen)
@@ -393,7 +400,7 @@ def run(num_first_gen, num_gen):
 
 total_values = {}
 first_gen_size = 10
-num_generations = 15
+num_generations = 5
 num_trials = 1
 
 for n in range(0, num_generations):
@@ -418,4 +425,4 @@ plt.plot(x_values, y_values)
 plt.xlabel('num generations')
 plt.ylabel('average total payoff')
 plt.legend(loc="best")
-plt.savefig('convo_blondie_train_eachother_test_random.png')#took 3789 sec to run
+plt.savefig('convo_blondie_train_eachother_test_randomv3.png')#took 3789 sec to run
