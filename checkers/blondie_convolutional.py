@@ -15,7 +15,8 @@ from kill_player import *
 from input_player import *
 
 
-file_object = open('blondie.txt', 'a')
+file_object = open('blondie_convolutional.txt', 'a')
+saved_parents = open("saved_parents.txt", "a")
 
 def activation_function(x):
     return math.tanh(x)
@@ -163,7 +164,6 @@ def get_weight_ids(nodes_by_layer, bias_node_nums):
                     weight_ids.append(f'{node.node_num},{next_layer_node.node_num}')
 
     all_weights = weight_ids + get_convoluntional_layer_weight_ids([node.node_num for node in nodes_by_layer[1]], [node.node_num for node in nodes_by_layer[2]])
-    print(len(get_convoluntional_layer_weight_ids([node.node_num for node in nodes_by_layer[1]], [node.node_num for node in nodes_by_layer[2]])))
     return all_weights
 
 
@@ -174,7 +174,7 @@ def make_new_gen_v2(parents):
         child_weights = {}
         child_bias_node_nums = parent.bias_nodes
         child_mutation_rate = parent.mutation_rate * math.exp(np.random.normal(0, 1) / ((2 * (1742 ** 0.5)) ** 0.5))
-        child_k = parent.k_value * math.exp(np.random.normal(0, 1) / (2 ** 0.5))
+        child_k = parent.k_value + random.choice([-0.1, 0, 0.1])
 
         if child_k < 1:
             child_k = 1
@@ -258,12 +258,13 @@ def evaluation(neural_nets):
     num_rounds_data = []
 
     for neural_net in neural_nets:
-        comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 5)
+        #comparing_nets = get_subset(copy.deepcopy(neural_nets), neural_net, 3) #change last number to change num evaluated against
         payoff_data[neural_net] = 0
+        for _ in range(3):
 
-        for net in comparing_nets:
-            start_time = time.time()
-            game = Checkers([NNPlayer(2, neural_net), NNPlayer(2, net)])
+        #for net in comparing_nets:
+            #game = Checkers([NNPlayer(2, neural_net), NNPlayer(2, net)])
+            game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])
 
             try:
                 game.run_to_completion()
@@ -286,6 +287,17 @@ def evaluation(neural_nets):
     return payoff_data
 
 
+def save_parents(parents):
+    for parent in parents:
+        to_print_data = {}
+        print_nodes = {}
+
+        to_print_data["node_weights"] = parent.node_weights
+        to_print_data['mutation_rate'] = parent.mutation_rate
+        to_print_data["k"] = [parent.k]
+        file_object.write(f'{to_print_data} \n')
+
+
 def select_parents(payoff_data):
     sorted_data = sorted(payoff_data.items(), key=lambda x: x[1], reverse=True)
     sorted_nets = [info[0] for info in sorted_data]
@@ -299,7 +311,7 @@ def find_average_payoff(neural_nets, return_net=False):
         payoff_values[neural_net] = 0
 
     for neural_net in neural_nets:
-        game = Checkers([NNPlayer(2, neural_net), KillPlayer()])
+        game = Checkers([NNPlayer(2, neural_net), RandomPlayer()])
 
         try:
             game.run_to_completion()
@@ -329,7 +341,7 @@ def find_average_payoff(neural_nets, return_net=False):
         print_nodes = {}
 
         for layer in to_print_data['nodes']:
-            print_nodes[layer] = [node.node_num for node in to_print_data['nodes'][layer]] #this isnt working fsr
+            print_nodes[layer] = [node.node_num for node in to_print_data['nodes'][layer]]
 
         to_print_data['nodes'] = print_nodes
         file_object.write(f'{to_print_data} \n')
@@ -341,6 +353,7 @@ def find_average_payoff(neural_nets, return_net=False):
 
 
 def run(num_first_gen, num_gen):
+    saved_parents.write('Gen 0 \n')
     average_payoff_values = {}
     return_net = False
     start_time = time.time()
@@ -348,6 +361,7 @@ def run(num_first_gen, num_gen):
     evaluation_data = evaluation(first_gen)
     #print("Evaluation for Gen 0 Done")
     next_gen_parents = select_parents(evaluation_data)
+    save_parents(next_gen_parents)
     #print("Parents from Gen 0 have been selected")
     average_payoff_values[0] = find_average_payoff(next_gen_parents)
     #print("Got Average Total Payoff Value for Gen 0")
@@ -356,11 +370,13 @@ def run(num_first_gen, num_gen):
 
  
     for n in range(1, num_gen):
+        saved_parents.write(f'Gen {n} \n')
         start_time = time.time()
         evaluation_data = evaluation(current_gen)
         #print(f"Evaluation for Gen {n} Done")
         #testing next_gen_parents = select_parents(second_evaluation_data)
         next_gen_parents = select_parents(evaluation_data)
+        save_parents(next_gen_parents)
         #print(f"Parents from Gen {n} have been selected")
 
         if n == num_gen - 1:
@@ -376,12 +392,30 @@ def run(num_first_gen, num_gen):
 
 
 total_values = {}
-first_gen_size = 30
-num_generations = 100
+first_gen_size = 10
+num_generations = 15
 num_trials = 1
 
-neural_net = make_first_gen(1)[0]
-weight_ids = list(neural_net.node_weights.keys())
-num_weights = 0
-bias_weights = 0
-print("total weights", len(weight_ids))
+for n in range(0, num_generations):
+    total_values[n] = 0
+
+
+for n in range(0, num_trials):
+    start_time = time.time()
+    average_payoff_values = run(first_gen_size, num_generations)
+
+    for layer in average_payoff_values:
+        total_values[layer] += average_payoff_values[layer]
+
+    print(f"Trial {n} took {time.time() - start_time} seconds to complete")
+
+
+x_values = [key for key in list(total_values.keys())]
+y_values = [value / num_trials for value in list(total_values.values())]
+
+plt.style.use('bmh')
+plt.plot(x_values, y_values)
+plt.xlabel('num generations')
+plt.ylabel('average total payoff')
+plt.legend(loc="best")
+plt.savefig('convo_blondie_train_eachother_test_random.png')#took 3789 sec to run
