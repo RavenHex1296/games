@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import time
 import copy
 import sys
+import ast
 sys.path.append('checkers')
 from game import *
 sys.path.append("checkers/players")
@@ -298,6 +299,29 @@ def save_parents(parents):
         saved_parents.write(f'{to_print_data} \n\n')
 
 
+def get_text_file_data(text_file_name):
+    f = open(text_file_name, "r")
+    list_data = f.read().split("\n")
+    neural_net_data = []
+
+    for neural_net in list_data[1:]:
+        neural_net_data.append(ast.literal_eval(neural_net))
+
+    return neural_net_data #make sure to remove blank line at end of txt file
+
+
+def turn_txt_file_into_nets(txt_file_data):
+    neural_nets = []
+    nodes_by_layer = {1: [Node(n) for n in range(1, 34)], 2: [Node(n) for n in range(88, 180)], 3: [Node(n) for n in range(34, 75)], 4: [Node(n) for n in range(75, 86)], 5: [Node(86)]}
+    nodes_by_layer[1].append(Node(87))
+
+    for data in txt_file_data:
+        neural_net = EvolvedNeuralNet(nodes_by_layer, data['node_weights'], [33, 74, 85, 179], 87, data['mutation_rate'], data['k'])
+        neural_nets.append(neural_net)
+
+    return neural_nets
+
+
 def select_parents(payoff_data):
     sorted_data = sorted(payoff_data.items(), key=lambda x: x[1], reverse=True)
     sorted_nets = [info[0] for info in sorted_data]
@@ -406,7 +430,14 @@ num_trials = 1
 for n in range(0, num_generations):
     total_values[n] = 0
 
+'''
+converts txt data to neural net objects
+data = get_text_file_data("saved_parents.txt")
+neural_nets = turn_txt_file_into_nets((data))
+print(neural_nets)
+'''
 
+'''
 for n in range(0, num_trials):
     start_time = time.time()
     average_payoff_values = run(first_gen_size, num_generations)
@@ -426,3 +457,4 @@ plt.xlabel('num generations')
 plt.ylabel('average total payoff')
 plt.legend(loc="best")
 plt.savefig('convo_blondie_train_eachother_test_randomv3.png')#took 3789 sec to run
+'''
