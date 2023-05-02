@@ -14,7 +14,8 @@ from neural_net_player import *
 from kill_player import *
 from input_player import *
 
-
+np.random.seed(10)
+random.seed(10)
 file_object = open('blondie.txt', 'a')
 
 def activation_function(x):
@@ -157,11 +158,6 @@ def make_new_gen_v2(parents):
     return new_gen
 
 
-def run_game(players):
-    game = TicTacToe(players)
-    game.run_to_completion()
-
-
 def make_first_gen(population_size):
     first_gen = []
 
@@ -174,11 +170,11 @@ def make_first_gen(population_size):
         weights = {}
 
         for weight_id in weight_ids:
-            weight = random.uniform(-0.2, 0.2)
-            assert abs(weight) <= 0.2, "Initial weight is not in [-0.2, 0.2]"
+            weight = 0.1 #random.uniform(-0.2, 0.2)
+            #assert abs(weight) <= 0.2, "Initial weight is not in [-0.2, 0.2]"
             weights[weight_id] = weight	
 
-        assert(abs(sum(list(weights.values()))) < 100), "Sum of initial weights too large"
+        #assert(abs(sum(list(weights.values()))) < 100), "Sum of initial weights too large"
         neural_net = EvolvedNeuralNet(nodes_by_layer, weights, [33, 74, 85], 87, 0.05, 2)
         first_gen.append(neural_net)
 
@@ -333,8 +329,13 @@ total_values = {}
 first_gen_size = 30
 num_generations = 100
 num_trials = 1
-
-
+neural_nets = make_first_gen(2)
+players = [NNPlayer(2, neural_nets[0]), NNPlayer(2, neural_nets[1])]
+game = Checkers(players)
+game.run_to_completion()
+print(game.winner)
+#do top left neural net player
+'''
 for n in range(0, num_generations):
     total_values[n] = 0
 
@@ -358,3 +359,4 @@ plt.xlabel('num generations')
 plt.ylabel('average total payoff')
 plt.legend(loc="best")
 plt.savefig('blondiefullscale.png')
+'''
