@@ -13,6 +13,7 @@ from random_player import *
 from neural_net_player import *
 from kill_player import *
 from input_player import *
+from top_left_nn_player import *
 
 np.random.seed(10)
 random.seed(10)
@@ -330,7 +331,7 @@ first_gen_size = 30
 num_generations = 100
 num_trials = 1
 neural_nets = make_first_gen(2)
-players = [NNPlayer(2, neural_nets[0]), NNPlayer(2, neural_nets[1])]
+players = [TopLeftNNPlayer(2, neural_nets[0]), NNPlayer(2, neural_nets[1])]
 game = Checkers(players)
 game.run_to_completion()
 print(game.winner)
