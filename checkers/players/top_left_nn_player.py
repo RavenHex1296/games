@@ -30,9 +30,42 @@ class TopLeftNNPlayer:
         return board
 
     def choose_move(self, board, choices):
-        top_left_piece = choices[0][0]
+        self.game_tree.reset_node_values()
+
+        if board not in list(self.game_tree.nodes_dict.keys()):
+            self.game_tree.nodes_dict[str(board)] = Node(board, self.player_num, self.player_num)
+
+        current_node = self.game_tree.nodes_dict[str(copy.deepcopy(board))]
+        current_nodes = [current_node]
+        children = self.game_tree.build_tree(current_nodes)
+        nodes_by_layer = {1: current_nodes, 2: children}
+        current_nodes = children
+
+        for n in range(3, self.ply + 1):
+            children = self.game_tree.build_tree(current_nodes)
+            nodes_by_layer[n] = children
+            current_nodes = children
+
+        assert len(current_node.children) == len(choices), "Node has different number of children than choices"
+        self.game_tree.set_node_values(nodes_by_layer, self.neural_net)
+        max_value = current_node.children[0].value
+
+        for child in current_node.children:
+            if child.value > max_value:
+                max_value = child.value
+
+        optimal_choices = []
 
         for choice in choices:
+            new_board = self.translate(choice, copy.deepcopy(board))
+            board_value = self.game_tree.nodes_dict[str(new_board)].value
+
+            if board_value == max_value:
+                optimal_choices.append(choice)
+
+        top_left_piece = optimal_choices[0][0]
+
+        for choice in optimal_choices:
             if choice[0][0] < top_left_piece[0]:
                 top_left_piece = choice[0]
 
@@ -41,7 +74,7 @@ class TopLeftNNPlayer:
 
         options = []
 
-        for choice in choices:
+        for choice in optimal_choices:
             if choice[0] == top_left_piece:
                 options.append(choice)
 
