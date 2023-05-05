@@ -305,7 +305,7 @@ def run(num_first_gen, num_gen):
     current_gen = make_new_gen_v2(next_gen_parents)
     print(f"Gen 0 took {time.time() - start_time} seconds to complete")
 
- 
+
     for n in range(1, num_gen):
         start_time = time.time()
         evaluation_data = evaluation(current_gen)
@@ -331,9 +331,11 @@ first_gen_size = 30
 num_generations = 100
 num_trials = 1
 neural_nets = make_first_gen(2)
-players = [TopLeftNNPlayer(2, neural_nets[0]), NNPlayer(2, neural_nets[1])]
+start_time = time.time()
+players = [TopLeftNNPlayer(2, neural_nets[0]), TopLeftNNPlayer(2, neural_nets[1])]
 game = Checkers(players)
 game.run_to_completion()
+print(time.time() - start_time)
 print(game.winner)
 #do top left neural net player
 '''

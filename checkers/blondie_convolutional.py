@@ -16,9 +16,6 @@ from kill_player import *
 from input_player import *
 
 
-file_object = open('blondie_convolutional.txt', 'a')
-saved_parents = open("saved_parents.txt", "a")
-saved_gen_payoffs = open("saved_gen_payoffs.txt", "a")
 
 def activation_function(x):
     return math.tanh(x)
@@ -273,7 +270,9 @@ def evaluation(neural_nets):
 
             except:
                 game.winner = "Tie"
-                file_object.write("Game vs another net was not run properly \n")
+
+                with open("blondie_convolutional.txt", "a") as file:
+                    file.write("Game vs another net was not run properly \n")
 
             if game.winner == 1:
                 payoff_data[neural_net] += 1
@@ -283,7 +282,9 @@ def evaluation(neural_nets):
 
             num_rounds_data.append(game.round)
 
-    file_object.write(f"avg number of rounds {sum(num_rounds_data) / len(num_rounds_data)} \n")
+    with open("blondie_convolutional.txt", "a") as file:
+        file.write(f"avg number of rounds {sum(num_rounds_data) / len(num_rounds_data)} \n")
+
     print(f"avg number of rounds {sum(num_rounds_data) / len(num_rounds_data)}")
     return payoff_data
 
@@ -296,7 +297,9 @@ def save_parents(parents):
         to_print_data["node_weights"] = parent.node_weights
         to_print_data['mutation_rate'] = parent.mutation_rate
         to_print_data["k"] = [parent.k_value]
-        saved_parents.write(f'{to_print_data} \n\n')
+
+        with open("saved_parents.txt", "a") as file:
+            file.write(f'{to_print_data} \n\n')
 
 
 def get_text_file_data(text_file_name):
@@ -342,7 +345,9 @@ def find_average_payoff(neural_nets, return_net=False):
 
         except:
             game.winner = "Tie"
-            file_object.write("Game vs kill player not run properly \n")
+
+            with open("blondie_convolutional.txt", "w") as file:
+                file.write("Game vs kill player not run properly \n")
 
         if game.winner == 1:
             payoff_values[neural_net] = 1
@@ -368,11 +373,18 @@ def find_average_payoff(neural_nets, return_net=False):
             print_nodes[layer] = [node.node_num for node in to_print_data['nodes'][layer]]
 
         to_print_data['nodes'] = print_nodes
-        file_object.write(f'{to_print_data} \n')
+
+        with open("blondie_convolutional.txt", "a") as file:
+            file.write(f'{to_print_data} \n')
 
     avg_gen_payoff = sum([value for value in list(payoff_values.values())]) / len([value for value in list(payoff_values.values())])
-    file_object.write(f"{payoff_values.values()} \n {avg_gen_payoff} \n\n")
-    saved_gen_payoffs.write(f"{avg_gen_payoff},")
+    
+    with open("blondie_convolutional.txt", "a") as file:
+        file.write(f"{payoff_values.values()} \n {avg_gen_payoff} \n\n")
+
+    with open("saved_gen_payoffs.txt", "a") as file:
+        file.write(f"{avg_gen_payoff},")
+
     print(payoff_values.values())
     return avg_gen_payoff
 
@@ -381,7 +393,9 @@ def run(num_first_gen, num_gen):
     with open("saved_parents.txt", 'w') as file:
         file.writelines([''])
 
-    saved_parents.write('Gen 0 \n')
+    with open("saved_parents.txt", "w") as file:
+        file.write('Gen 0 \n')
+
     average_payoff_values = {}
     return_net = False
     start_time = time.time()
@@ -398,15 +412,15 @@ def run(num_first_gen, num_gen):
 
 
     for n in range(1, num_gen):
-        with open("saved_parents.txt", 'w') as file:
-            file.writelines([''])
-
-        saved_parents.write(f'Gen {n} \n')
         start_time = time.time()
         evaluation_data = evaluation(current_gen)
         #print(f"Evaluation for Gen {n} Done")
         #testing next_gen_parents = select_parents(second_evaluation_data)
         next_gen_parents = select_parents(evaluation_data)
+        with open("saved_parents.txt", 'w') as file:
+            file.writelines([''])
+            file.write(f'Gen {n} \n')
+
         save_parents(next_gen_parents)
         #print(f"Parents from Gen {n} have been selected")
 
@@ -424,7 +438,7 @@ def run(num_first_gen, num_gen):
 
 total_values = {}
 first_gen_size = 10
-num_generations = 5
+num_generations = 50
 num_trials = 1
 
 for n in range(0, num_generations):
@@ -437,7 +451,7 @@ neural_nets = turn_txt_file_into_nets((data))
 print(neural_nets)
 '''
 
-'''
+
 for n in range(0, num_trials):
     start_time = time.time()
     average_payoff_values = run(first_gen_size, num_generations)
@@ -456,5 +470,4 @@ plt.plot(x_values, y_values)
 plt.xlabel('num generations')
 plt.ylabel('average total payoff')
 plt.legend(loc="best")
-plt.savefig('convo_blondie_train_eachother_test_randomv3.png')#took 3789 sec to run
-'''
+plt.savefig('convo_blondie_train_eachother_test_randomv2.png')#took 3789 sec to run
