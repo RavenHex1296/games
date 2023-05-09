@@ -1,0 +1,201 @@
+avg number of rounds 93.6 
+dict_values([1, -2, 0, -2, 0]) 
+ -0.6 
+
+avg number of rounds 90.66666666666667 
+dict_values([0, 1, 0, -2, 1]) 
+ 0.0 
+
+avg number of rounds 91.86666666666666 
+dict_values([0, 0, 0, 0, 0]) 
+ 0.0 
+
+avg number of rounds 91.83333333333333 
+dict_values([0, 0, 1, 0, 1]) 
+ 0.4 
+
+avg number of rounds 83.73333333333333 
+dict_values([-2, 1, 1, 1, -2]) 
+ -0.2 
+
+avg number of rounds 87.1 
+dict_values([0, 0, 1, 1, 0]) 
+ 0.4 
+
+avg number of rounds 76.5 
+dict_values([1, -2, 0, 0, 1]) 
+ 0.0 
+
+avg number of rounds 83.26666666666667 
+dict_values([-2, 1, 0, 0, 1]) 
+ 0.0 
+
+avg number of rounds 85.9 
+dict_values([1, 1, 1, 1, 0]) 
+ 0.8 
+
+avg number of rounds 89.23333333333333 
+dict_values([0, 1, 0, 0, 1]) 
+ 0.4 
+
+avg number of rounds 85.26666666666667 
+dict_values([0, 0, 0, 1, 1]) 
+ 0.4 
+
+avg number of rounds 79.83333333333333 
+dict_values([1, 1, -2, 0, 0]) 
+ 0.0 
+
+avg number of rounds 77.6 
+dict_values([0, -2, 1, 1, 0]) 
+ 0.0 
+
+avg number of rounds 88.9 
+dict_values([0, 1, -2, 1, 0]) 
+ 0.0 
+
+avg number of rounds 87.76666666666667 
+dict_values([0, 1, 0, 0, -2]) 
+ -0.2 
+
+avg number of rounds 84.23333333333333 
+dict_values([1, 0, 0, -2, 0]) 
+ -0.2 
+
+avg number of rounds 83.7 
+dict_values([-2, 1, -2, 0, -2]) 
+ -1.0 
+
+avg number of rounds 86.1 
+dict_values([1, 0, -2, 1, 0]) 
+ 0.0 
+
+avg number of rounds 93.06666666666666 
+dict_values([1, -2, 1, 1, 0]) 
+ 0.2 
+
+avg number of rounds 91.03333333333333 
+dict_values([0, 1, 1, 0, 0]) 
+ 0.4 
+
+avg number of rounds 89.33333333333333 
+dict_values([1, 0, -2, 1, 1]) 
+ 0.2 
+
+avg number of rounds 86.93333333333334 
+dict_values([1, 1, 0, 1, 0]) 
+ 0.6 
+
+avg number of rounds 92.46666666666667 
+dict_values([1, 0, 0, 0, 1]) 
+ 0.4 
+
+avg number of rounds 82.56666666666666 
+dict_values([0, 0, 1, 0, 1]) 
+ 0.4 
+
+avg number of rounds 91.63333333333334 
+dict_values([0, 0, 0, 0, 0]) 
+ 0.0 
+
+avg number of rounds 88.76666666666667 
+dict_values([1, 0, 1, -2, 1]) 
+ 0.2 
+
+avg number of rounds 84.16666666666667 
+dict_values([0, 1, 0, 0, 1]) 
+ 0.4 
+
+avg number of rounds 78.26666666666667 
+dict_values([0, 0, -2, 0, 0]) 
+ -0.4 
+
+avg number of rounds 84.26666666666667 
+dict_values([0, 0, 0, 1, 1]) 
+ 0.4 
+
+avg number of rounds 84.53333333333333 
+dict_values([1, 0, 0, -2, 0]) 
+ -0.2 
+
+avg number of rounds 92.2 
+dict_values([1, 1, 1, 0, 0]) 
+ 0.6 
+
+avg number of rounds 83.9 
+dict_values([0, 0, 0, 0, 1]) 
+ 0.2 
+
+avg number of rounds 77.6 
+dict_values([0, 1, -2, 1, 0]) 
+ 0.0 
+
+avg number of rounds 82.9 
+dict_values([-2, 0, 0, 0, 0]) 
+ -0.4 
+
+avg number of rounds 84.2 
+dict_values([1, 1, -2, 0, 0]) 
+ 0.0 
+
+avg number of rounds 88.43333333333334 
+dict_values([-2, 1, 0, 0, 0]) 
+ -0.2 
+
+avg number of rounds 85.76666666666667 
+dict_values([0, 0, 0, 0, 0]) 
+ 0.0 
+
+avg number of rounds 84.0 
+dict_values([0, 0, 0, 0, 0]) 
+ 0.0 
+
+avg number of rounds 85.96666666666667 
+dict_values([1, 1, 0, 0, -2]) 
+ 0.0 
+
+avg number of rounds 82.26666666666667 
+dict_values([0, 1, 1, 0, 1]) 
+ 0.6 
+
+avg number of rounds 85.13333333333334 
+dict_values([0, 0, 0, 0, 1]) 
+ 0.2 
+
+avg number of rounds 89.9 
+dict_values([1, -2, 0, 1, 0]) 
+ 0.0 
+
+avg number of rounds 88.7 
+dict_values([1, 0, 0, 1, 1]) 
+ 0.6 
+
+avg number of rounds 86.76666666666667 
+dict_values([0, 0, -2, 0, 0]) 
+ -0.4 
+
+avg number of rounds 79.33333333333333 
+dict_values([0, 0, 0, 1, 0]) 
+ 0.2 
+
+avg number of rounds 87.36666666666666 
+dict_values([1, 1, -2, 1, 0]) 
+ 0.2 
+
+avg number of rounds 93.8 
+dict_values([-2, 1, 1, -2, 0]) 
+ -0.4 
+
+avg number of rounds 87.76666666666667 
+dict_values([0, 0, 1, 1, 1]) 
+ 0.6 
+
+avg number of rounds 89.73333333333333 
+dict_values([-2, 0, 0, 0, 0]) 
+ -0.4 
+
+avg number of rounds 82.76666666666667 
+dict_values([1, -2, 0, 0, -2]) 
+ -0.6 
+
+avg number of rounds 88.66666666666667 

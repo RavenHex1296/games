@@ -436,22 +436,68 @@ def run(num_first_gen, num_gen):
     return average_payoff_values
 
 
+def continue_evo(parents, start_gen, end_gen):
+    with open("saved_parents.txt", 'w') as file:
+        file.writelines([''])
+
+    with open("saved_parents.txt", "w") as file:
+        file.write(f'Gen {start_gen} \n')
+
+    average_payoff_values = {}
+    return_net = False
+    start_time = time.time()
+    first_gen = make_first_gen(num_first_gen)
+    evaluation_data = evaluation(first_gen)
+    #print("Evaluation for Gen 0 Done")
+    next_gen_parents = select_parents(evaluation_data)
+    save_parents(next_gen_parents)
+    #print("Parents from Gen 0 have been selected")
+    average_payoff_values[0] = find_average_payoff(next_gen_parents)
+    #print("Got Average Total Payoff Value for Gen 0")
+    current_gen = make_new_gen_v2(next_gen_parents)
+    print(f"Gen 0 took {time.time() - start_time} seconds to complete")
+
+
+    for n in range(start_gen + 1, end_gen):
+        start_time = time.time()
+        evaluation_data = evaluation(current_gen)
+        #print(f"Evaluation for Gen {n} Done")
+        #testing next_gen_parents = select_parents(second_evaluation_data)
+        next_gen_parents = select_parents(evaluation_data)
+        with open("saved_parents.txt", 'w') as file:
+            file.writelines([''])
+            file.write(f'Gen {n} \n')
+
+        save_parents(next_gen_parents)
+        #print(f"Parents from Gen {n} have been selected")
+
+        if n == num_gen - 1:
+            return_net = True
+
+        #max_payoff_values[n] = find_max_payoff(evaluation_data, return_net)
+        average_payoff_values[n] = find_average_payoff(next_gen_parents, return_net)
+        #print(f"Got Average Total Payoff Value for Gen {n}")
+        current_gen = make_new_gen_v2(next_gen_parents)
+        print(f"Gen {n} took {time.time() - start_time} seconds to complete")
+
+    return average_payoff_values
+
+
 total_values = {}
 first_gen_size = 10
-num_generations = 50
+num_generations = 100
 num_trials = 1
 
 for n in range(0, num_generations):
     total_values[n] = 0
 
-'''
-converts txt data to neural net objects
+
+#converts txt data to neural net objects
 data = get_text_file_data("saved_parents.txt")
 neural_nets = turn_txt_file_into_nets((data))
-print(neural_nets)
+payoff_values = continue_evo(neural_nets, 51, 100)
+
 '''
-
-
 for n in range(0, num_trials):
     start_time = time.time()
     average_payoff_values = run(first_gen_size, num_generations)
@@ -460,9 +506,9 @@ for n in range(0, num_trials):
         total_values[layer] += average_payoff_values[layer]
 
     print(f"Trial {n} took {time.time() - start_time} seconds to complete")
-
-
-x_values = [key for key in list(total_values.keys())]
+'''
+'''
+x_values = [n for n in range(0, 100)]#[key for key in list(total_values.keys())]
 y_values = [value / num_trials for value in list(total_values.values())]
 
 plt.style.use('bmh')
@@ -470,4 +516,5 @@ plt.plot(x_values, y_values)
 plt.xlabel('num generations')
 plt.ylabel('average total payoff')
 plt.legend(loc="best")
-plt.savefig('convo_blondie_train_eachother_test_randomv2.png')#took 3789 sec to run
+plt.savefig('convo_blondie_train_eachother_test_randomv2.png')
+'''
